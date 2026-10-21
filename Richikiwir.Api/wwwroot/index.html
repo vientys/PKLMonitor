@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Monitoring Database PKL &amp; Presensi Mobile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-light: #2563EB;
+            --primary-50: #EFF6FF;
+            --success: #059669;
+            --success-50: #ECFDF5;
+            --warning: #D97706;
+            --warning-50: #FFFBEB;
+            --danger: #DC2626;
+            --danger-50: #FEF2F2;
+            --purple: #7C3AED;
+            --purple-50: #F5F3FF;
+            --gray-50: #F8FAFC;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-300: #CBD5E1;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1E293B;
+            --gray-900: #0F172A;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: #F1F5F9;
+            color: var(--gray-900);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* Top Header */
+        header {
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%);
+            color: white;
+            padding: 20px 24px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo {
+            font-size: 28px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-title {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: #93C5FD;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .server-status-pill {
+            background: #10B981;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #10B981;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .auto-refresh-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #CBD5E1;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 6px 10px;
+            border-radius: 8px;
+        }
+
+        /* Container Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+
+        /* Top Metrics Stats */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gray-200);
+            padding: 18px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .metric-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gray-900);
+            line-height: 1.1;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* Main Tabs */
+        .tab-nav {
+            display: flex;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 6px;
+            gap: 6px;
+            border: 1px solid var(--gray-200);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gray-600);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
+        }
+
+        .tab-badge {
+            background: rgba(0,0,0,0.08);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(255,255,255,0.25);
+            color: white;
+        }
+
+        /* Content Sections */
+        .content-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gray-200);
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--gray-100);
+            padding-bottom: 12px;
+        }
+
+        .content-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Attendance Cards Grid */
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .attendance-grid { grid-template-columns: 1fr; }
+        }
+
+        .att-card {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .att-card:hover {
+            border-color: var(--primary-light);
+        }
+
+        .att-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .att-student-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .att-student-sub {
+            font-size: 11px;
+            color: var(--gray-600);
+        }
+
+        .att-body-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .att-photo-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--gray-100);
+            border: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .att-photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .att-photo-placeholder {
+            font-size: 28px;
+        }
+
+        .att-photo-hint {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-top: 4px;
+        }
+
+        .att-info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .att-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .att-info-item span.label {
+            color: var(--gray-600);
+            min-width: 65px;
+            font-weight: 500;
+        }
+
+        .att-info-item span.value {
+            font-weight: 600;
+            color: var(--gray-800);
+            word-break: break-word;
+        }
+
+        .att-card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px dashed var(--gray-200);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-masuk { background: #DBEAFE; color: #1D4ED8; }
+        .badge-pulang { background: #DCFCE7; color: #15803D; }
+        .badge-izin { background: #FEF3C7; color: #B45309; }
+        .badge-sakit { background: #FEE2E2; color: #B91C1C; }
+
+        .badge-radius-ok { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
+        .badge-radius-out { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+
+        .badge-role-siswa { background: #E0F2FE; color: #0369A1; }
+        .badge-role-industri { background: #DCFCE7; color: #166534; }
+        .badge-role-guru { background: #F3E8FF; color: #6B21A8; }
+        .badge-role-monitor { background: #FEF3C7; color: #92400E; }
+        .badge-role-admin { background: #FEE2E2; color: #991B1B; }
+
+        /* Tables */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        th {
+            background: var(--gray-50);
+            font-weight: 700;
+            color: var(--gray-700);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: #FAFAFC;
+        }
+
+        /* Actions Button */
+        .btn-action {
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-approve { background: var(--success); color: white; }
+        .btn-approve:hover { background: #047857; }
+        .btn-reject { background: #EF4444; color: white; }
+        .btn-reject:hover { background: #DC2626; }
+        .btn-map { background: #3B82F6; color: white; text-decoration: none; }
+        .btn-map:hover { background: #2563EB; }
+
+        /* Role Filter Chips */
+        .role-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .role-chip {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .role-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Modal Preview */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            max-width: 560px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            animation: modalFade 0.2s ease-out;
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            padding: 14px 18px;
+            background: var(--gray-900);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 18px;
+        }
+
+        .modal-photo-img {
+            width: 100%;
+            max-height: 380px;
+            object-fit: contain;
+            background: #000;
+            border-radius: 8px;
+        }
+
+        .modal-watermark {
+            background: var(--gray-100);
+            border-left: 4px solid var(--primary-light);
+            padding: 10px 12px;
+            margin-top: 12px;
+            font-size: 11px;
+            border-radius: 0 6px 6px 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="brand-box">
+                <img src="/logo_smkn5.png" alt="SMKN 5 Kabupaten Tangerang" style="width: 44px; height: 44px; object-fit: contain; background: white; border-radius: 12px; padding: 3px; border: 1.5px solid rgba(255,255,255,0.4); box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                <div>
+                    <h1 class="brand-title">SMKN 5 KAB. TANGERANG • Monitoring Presensi PKL</h1>
+                    <div class="brand-subtitle">
+                        <span class="server-status-pill"></span>
+                        <span>Database Fisik SQLite: <strong>pkl_database.db</strong> • Sinkron Realtime dengan Aplikasi Mobile</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="auto-refresh-toggle">
+                    <input type="checkbox" id="chkAutoRefresh" checked onchange="toggleAutoRefresh()">
+                    <label for="chkAutoRefresh" style="cursor: pointer;">Auto Refresh (5s)</label>
+                </div>
+                <button class="btn-refresh" onclick="refreshAllData()">
+                    🔄 Segarkan Data
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <!-- Top Metrics Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon" style="background: var(--primary-50); color: var(--primary-light);">👥</div>
+                <div>
+                    <div class="metric-number" id="metricTotalUsers">0</div>
+                    <div class="metric-label">Total Akun Terdaftar</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon" style="background: var(--success-50); color: var(--success);">📍</div>
+                <div>
+                    <div class="metric-number" id="metricTodayAtt">0</div>
+                    <div class="metric-label">Presensi Hari Ini</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon" style="background: var(--purple-50); color: var(--purple);">📖</div>
+                <div>
+                    <div class="metric-number" id="metricTotalLogs">0</div>
+                    <div class="metric-label">Total Jurnal Harian</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon" style="background: var(--warning-50); color: var(--warning);">⏳</div>
+                <div>
+                    <div class="metric-number" id="metricPendingAtt">0</div>
+                    <div class="metric-label">Menunggu Verifikasi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('tab-absensi')">
+                📸 Monitoring Absensi, Foto &amp; Geotag GPS
+                <span class="tab-badge" id="badgeCountAtt">0</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-akun')">
+                👥 Database Akun (Semua Role)
+                <span class="tab-badge" id="badgeCountUsers">0</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-jurnal')">
+                📖 Monitoring Jurnal Harian (Logbook)
+                <span class="tab-badge" id="badgeCountLogs">0</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-server')">
+                ⚡ Status Server &amp; Database
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: MONITORING ABSENSI (FOTO & LOKASI)  -->
+        <!-- ========================================== -->
+        <div id="tab-absensi">
+            <div class="content-card">
+                <div class="content-header">
+                    <div>
+                        <div class="content-title">
+                            <span>📍 Data Presensi Realtime dari Aplikasi Mobile</span>
+                        </div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
+                            Memantau foto bukti kehadiran, koordinat GPS geotag, toleransi radius geofence (100m), dan status persetujuan mentor.
+                        </p>
+                    </div>
+
+                    <!-- Filter Options -->
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="text" id="searchAtt" placeholder="Cari Siswa / NISN..." 
+                               oninput="renderAttendanceList()" 
+                               style="padding: 6px 12px; font-size: 12px; border: 1px solid var(--gray-300); border-radius: 8px; outline: none;">
+                        <select id="filterType" onchange="renderAttendanceList()" style="padding: 6px 10px; font-size: 12px; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            <option value="ALL">Semua Tipe</option>
+                            <option value="Masuk">Masuk</option>
+                            <option value="Pulang">Pulang</option>
+                            <option value="Izin">Izin / Sakit</option>
+                        </select>
+                        <select id="filterRadius" onchange="renderAttendanceList()" style="padding: 6px 10px; font-size: 12px; border: 1px solid var(--gray-300); border-radius: 8px;">
+                            <option value="ALL">Semua Radius</option>
+                            <option value="OK">Radius Valid (≤100m)</option>
+                            <option value="OUT">Di Luar Radius (&gt;100m)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="attendance-grid" id="attendanceGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: DATABASE AKUN (SEMUA ROLE)          -->
+        <!-- ========================================== -->
+        <div id="tab-akun" style="display: none;">
+            <div class="content-card">
+                <div class="content-header">
+                    <div>
+                        <div class="content-title">👥 Seluruh Akun Pengguna Tersimpan di Database</div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
+                            Menampilkan seluruh akun untuk setiap role (Siswa, Pembimbing Industri, Guru Pembimbing, Monitor, Admin).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Role Filter Chips -->
+                <div class="role-chips">
+                    <button class="role-chip active" onclick="filterUsersRole('ALL', this)">Semua Role</button>
+                    <button class="role-chip" onclick="filterUsersRole('Siswa', this)">🎓 Siswa PKL</button>
+                    <button class="role-chip" onclick="filterUsersRole('PembimbingIndustri', this)">🏢 Pembimbing Industri (DU/DI)</button>
+                    <button class="role-chip" onclick="filterUsersRole('PembimbingSekolah', this)">🏫 Guru Pembimbing</button>
+                    <button class="role-chip" onclick="filterUsersRole('Monitor', this)">📊 Koordinator Monitor</button>
+                    <button class="role-chip" onclick="filterUsersRole('Admin', this)">⚙️ Administrator</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Peran (Role)</th>
+                                <th>Nama Lengkap</th>
+                                <th>Identitas (NISN/NIP)</th>
+                                <th>Asal Sekolah / Kampus</th>
+                                <th>Perusahaan / Mitra DU/DI</th>
+                                <th>Status Riwayat</th>
+                                <th>Email / Kontak</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: MONITORING JURNAL (LOGBOOK)         -->
+        <!-- ========================================== -->
+        <div id="tab-jurnal" style="display: none;">
+            <div class="content-card">
+                <div class="content-header">
+                    <div>
+                        <div class="content-title">📖 Jurnal Kegiatan Harian Siswa (Logbook)</div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
+                            Rekapitulasi aktivitas praktik kerja lapangan yang dikirimkan oleh siswa dari aplikasi mobile.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Nama Siswa &amp; NISN</th>
+                                <th>Perusahaan Mitra</th>
+                                <th>Judul Aktivitas Praktik</th>
+                                <th>Uraian Kegiatan &amp; Kompetensi</th>
+                                <th>Status Verifikasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logbookTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: STATUS SERVER & DATABASE           -->
+        <!-- ========================================== -->
+        <div id="tab-server" style="display: none;">
+            <div class="content-card">
+                <div class="content-header">
+                    <div class="content-title">⚡ Informasi Teknis Server &amp; Database SQLite</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 14px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--gray-600); text-transform: uppercase;">File Database Fisik</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--primary); font-family: 'JetBrains Mono', monospace; margin-top: 4px;">pkl_database.db</div>
+                        <div style="font-size: 11px; color: var(--gray-600); margin-top: 2px;">Tersimpan permanen di direktori Richikiwir.Api</div>
+                    </div>
+
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 14px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--gray-600); text-transform: uppercase;">Toleransi Geofence Kantor</div>
+                        <div style="font-size: 15px; font-weight: 700; color: var(--success); font-family: 'JetBrains Mono', monospace; margin-top: 4px;">100.0 Meter</div>
+                        <div style="font-size: 11px; color: var(--gray-600); margin-top: 2px;">Target: Cyber 2 Tower (-6.22412, 106.83154)</div>
+                    </div>
+
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 14px;">
+                        <div style="font-size: 11px; font-weight: 700; color: var(--gray-600); text-transform: uppercase;">Koneksi Aplikasi Mobile</div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--gray-800); font-family: 'JetBrains Mono', monospace; margin-top: 4px;">Windows: http://localhost:5217</div>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--gray-800); font-family: 'JetBrains Mono', monospace; margin-top: 2px;">Android: http://10.0.2.2:5217</div>
+                    </div>
+                </div>
+
+                <div style="background: #0F172A; color: #E2E8F0; padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6;">
+                    <div style="color: #38BDF8; font-weight: 700; margin-bottom: 6px;">// Daftar Endpoint REST API Siap Digunakan Aplikasi Mobile:</div>
+                    <div>POST   /api/auth/register       -> Mendaftarkan akun (riwayat awal otomatis 0)</div>
+                    <div>POST   /api/auth/login          -> Autentikasi akun &amp; role</div>
+                    <div>POST   /api/attendance/check-in -> Simpan presensi masuk (dengan foto &amp; koordinat GPS)</div>
+                    <div>POST   /api/attendance/check-out-> Simpan presensi pulang</div>
+                    <div>POST   /api/logbooks            -> Simpan jurnal harian aktivitas PKL</div>
+                    <div>GET    /api/attendance          -> Ambil riwayat presensi</div>
+                    <div>GET    /api/users               -> Ambil daftar akun pengguna</div>
+                    <div>GET    /api/monitoring/summary  -> Ambil rekap data realtime monitoring</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Detail Foto & Geotag -->
+    <div class="modal" id="photoModal" onclick="closePhotoModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span id="modalTitle" style="font-size: 13px; font-weight: 700;">Bukti Foto Presensi</span>
+                <button onclick="closePhotoModal()" style="background: transparent; border: none; color: white; font-size: 18px; cursor: pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImg" class="modal-photo-img" src="" alt="Foto Bukti Kehadiran">
+                <div class="modal-watermark" id="modalWatermark">
+                    <!-- Dynamic Watermark Content -->
+                </div>
+                <div style="margin-top: 14px; text-align: right;">
+                    <button class="btn-action btn-approve" id="btnModalApprove" onclick="approveFromModal()">✓ Setujui Presensi Ini</button>
+                    <button class="btn-action" style="background: var(--gray-200); color: var(--gray-800);" onclick="closePhotoModal()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rawAttendances = [];
+        let rawUsers = [];
+        let rawLogbooks = [];
+        let activeRoleFilter = 'ALL';
+        let autoRefreshTimer = null;
+        let activeModalRecordId = null;
+
+        // Auto Refresh Timer
+        function setupAutoRefresh() {
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+            autoRefreshTimer = setInterval(() => {
+                const isAuto = document.getElementById('chkAutoRefresh').checked;
+                if (isAuto) refreshAllData(false);
+            }, 5000);
+        }
+
+        function toggleAutoRefresh() {
+            setupAutoRefresh();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            ['tab-absensi', 'tab-akun', 'tab-jurnal', 'tab-server'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+
+            document.getElementById(tabId).style.display = 'block';
+            event.currentTarget.classList.add('active');
+        }
+
+        async function refreshAllData(showIndicator = true) {
+            if (showIndicator) {
+                document.querySelector('.btn-refresh').innerText = '⏳ Memuat...';
+            }
+
+            try {
+                // Fetch summary
+                const sumRes = await fetch('/api/monitoring/summary');
+                const sumJson = await sumRes.json();
+                if (sumJson.success) {
+                    const d = sumJson.data;
+                    document.getElementById('metricTotalUsers').innerText = d.totalUsers;
+                    document.getElementById('metricTodayAtt').innerText = d.todayTotal;
+                    document.getElementById('metricTotalLogs').innerText = d.totalLogbooks;
+                    document.getElementById('metricPendingAtt').innerText = d.pendingApprovalCount;
+
+                    document.getElementById('badgeCountAtt').innerText = d.totalAttendances;
+                    document.getElementById('badgeCountUsers').innerText = d.totalUsers;
+                    document.getElementById('badgeCountLogs').innerText = d.totalLogbooks;
+                }
+
+                // Fetch attendances
+                const attRes = await fetch('/api/attendance');
+                const attJson = await attRes.json();
+                if (attJson.success) {
+                    rawAttendances = attJson.data || [];
+                    renderAttendanceList();
+                }
+
+                // Fetch users
+                const usersRes = await fetch('/api/users');
+                const usersJson = await usersRes.json();
+                if (usersJson.success) {
+                    rawUsers = usersJson.data || [];
+                    renderUserTable();
+                }
+
+                // Fetch logbooks
+                const logRes = await fetch('/api/logbooks');
+                const logJson = await logRes.json();
+                if (logJson.success) {
+                    rawLogbooks = logJson.data || [];
+                    renderLogbookTable();
+                }
+            } catch (err) {
+                console.error('Gagal mengambil data monitoring:', err);
+            } finally {
+                if (showIndicator) {
+                    document.querySelector('.btn-refresh').innerText = '🔄 Segarkan Data';
+                }
+            }
+        }
+
+        // Render Attendance Cards
+        function renderAttendanceList() {
+            const grid = document.getElementById('attendanceGrid');
+            grid.innerHTML = '';
+
+            const search = document.getElementById('searchAtt').value.toLowerCase().trim();
+            const filterType = document.getElementById('filterType').value;
+            const filterRadius = document.getElementById('filterRadius').value;
+
+            let filtered = rawAttendances.filter(a => {
+                if (search) {
+                    const matchName = (a.studentName || '').toLowerCase().includes(search);
+                    const matchNisn = (a.studentNisn || '').toLowerCase().includes(search);
+                    const matchComp = (a.companyName || '').toLowerCase().includes(search);
+                    if (!matchName && !matchNisn && !matchComp) return false;
+                }
+
+                if (filterType !== 'ALL') {
+                    if (filterType === 'Izin') {
+                        if (a.type !== 'Izin' && a.type !== 'Sakit') return false;
+                    } else if (a.type !== filterType) {
+                        return false;
+                    }
+                }
+
+                if (filterRadius === 'OK' && a.distanceMeters > 100.0) return false;
+                if (filterRadius === 'OUT' && a.distanceMeters <= 100.0) return false;
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px dashed var(--gray-300);">
+                        <div style="font-size: 36px; margin-bottom: 8px;">📋</div>
+                        <div style="font-weight: 700; color: var(--gray-700);">Tidak Ada Data Presensi Sesuai Filter</div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Data presensi yang dikirim dari aplikasi mobile akan langsung muncul di sini.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'att-card';
+
+                const isWithinRadius = item.distanceMeters <= 100.0;
+                const radiusBadge = isWithinRadius
+                    ? `<span class="badge badge-radius-ok">✓ Dalam Radius (${item.distanceMeters.toFixed(1)}m)</span>`
+                    : `<span class="badge badge-radius-out">⚠ Luar Radius (${item.distanceMeters.toFixed(1)}m)</span>`;
+
+                const typeClass = 'badge-' + (item.type || 'masuk').toLowerCase();
+
+                // Photo preview logic: Real Base64 or Geotag Camera Snapshot Simulation
+                let photoHtml = '';
+                if (item.photoBase64) {
+                    photoHtml = `<img src="data:image/jpeg;base64,${item.photoBase64}" alt="Foto Selfie">`;
+                } else {
+                    photoHtml = `
+                        <div class="att-photo-placeholder">📷</div>
+                        <div class="att-photo-hint">Geotag Photo</div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="att-card-top">
+                        <div>
+                            <div class="att-student-name">${escapeHtml(item.studentName || 'Siswa')}</div>
+                            <div class="att-student-sub">NISN: ${escapeHtml(item.studentNisn || '-')} • ${escapeHtml(item.companyName || 'Mitra PKL')}</div>
+                        </div>
+                        <span class="badge ${typeClass}">${item.type}</span>
+                    </div>
+
+                    <div class="att-body-grid">
+                        <div class="att-photo-box" onclick="openPhotoModal('${item.id}')" title="Klik untuk memperbesar bukti foto">
+                            ${photoHtml}
+                        </div>
+
+                        <div class="att-info-list">
+                            <div class="att-info-item">
+                                <span class="label">⏰ Waktu:</span>
+                                <span class="value">${item.formattedDate} • ${item.formattedTime} WIB</span>
+                            </div>
+                            <div class="att-info-item">
+                                <span class="label">📍 Lokasi:</span>
+                                <span class="value">${escapeHtml(item.locationAddress || 'Lokasi Terdaftar')}</span>
+                            </div>
+                            <div class="att-info-item">
+                                <span class="label">🌐 GPS:</span>
+                                <span class="value">${item.latitude.toFixed(5)}, ${item.longitude.toFixed(5)}</span>
+                            </div>
+                            <div class="att-info-item">
+                                <span class="label">🎯 Radius:</span>
+                                <span class="value">${radiusBadge}</span>
+                            </div>
+                            <div class="att-info-item">
+                                <span class="label">💬 Catatan:</span>
+                                <span class="value">${escapeHtml(item.notes || '-')}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="att-card-bottom">
+                        <div style="font-size: 11px;">
+                            <strong>Verifikasi:</strong> 
+                            <span style="font-weight: 700; color: ${item.approvalStatus === 'Disetujui' ? '#059669' : '#D97706'};">
+                                ${item.approvalStatus || 'Menunggu'}
+                            </span> 
+                            (${escapeHtml(item.verifiedBy || '-')})
+                        </div>
+
+                        <div style="display: flex; gap: 6px;">
+                            <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" target="_blank" class="btn-action btn-map" title="Buka Titik Geotag di Google Maps">
+                                🗺️ Maps
+                            </a>
+                            ${item.approvalStatus !== 'Disetujui' ? `
+                                <button class="btn-action btn-approve" onclick="verifyAttendance('${item.id}', true)">✓ Setujui</button>
+                            ` : `
+                                <button class="btn-action btn-reject" onclick="verifyAttendance('${item.id}', false)">✗ Batal</button>
+                            `}
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Render User Accounts Table
+        function filterUsersRole(role, btn) {
+            activeRoleFilter = role;
+            document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            renderUserTable();
+        }
+
+        function renderUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+
+            let filtered = rawUsers;
+            if (activeRoleFilter !== 'ALL') {
+                filtered = filtered.filter(u => u.role === activeRoleFilter);
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--gray-600);">Tidak ada akun yang sesuai peran ini.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(u => {
+                const tr = document.createElement('tr');
+                const roleClass = 'badge-role-' + (u.role || '').toLowerCase();
+
+                // Status history indicator
+                let historyStatus = '';
+                if (u.isNewAccount) {
+                    historyStatus = `<span class="badge" style="background: #E2E8F0; color: #475569;">Akun Baru (0 Presensi)</span>`;
+                } else {
+                    historyStatus = `<span class="badge badge-radius-ok">Aktif (${u.attendanceCount} Absen, ${u.logbookCount} Jurnal)</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td><span class="badge ${roleClass}">${escapeHtml(u.roleName || u.role)}</span></td>
+                    <td><strong>${escapeHtml(u.fullName)}</strong></td>
+                    <td><code style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">${escapeHtml(u.identifier)}</code></td>
+                    <td>${escapeHtml(u.schoolName || '-')}</td>
+                    <td>${escapeHtml(u.companyName || '-')}</td>
+                    <td>${historyStatus}</td>
+                    <td>
+                        <div>${escapeHtml(u.email || '-')}</div>
+                        <div style="font-size: 10px; color: var(--gray-600);">${escapeHtml(u.phoneNumber || '-')}</div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Logbook Table
+        function renderLogbookTable() {
+            const tbody = document.getElementById('logbookTableBody');
+            tbody.innerHTML = '';
+
+            if (rawLogbooks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--gray-600);">Belum ada jurnal yang tersimpan di database.</td></tr>`;
+                return;
+            }
+
+            rawLogbooks.forEach(l => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${l.date ? l.date.split('T')[0] : '-'}</strong></td>
+                    <td><strong>${escapeHtml(l.studentName)}</strong><br><span style="font-size: 10px; color: var(--gray-600);">NISN: ${escapeHtml(l.studentNisn)}</span></td>
+                    <td>${escapeHtml(l.companyName || '-')}</td>
+                    <td><strong>${escapeHtml(l.activityTitle)}</strong></td>
+                    <td style="max-width: 300px;">${escapeHtml(l.description || '-')}</td>
+                    <td>
+                        <span class="badge ${l.isApproved ? 'badge-radius-ok' : 'badge-izin'}">
+                            ${l.isApproved ? '✓ Terverifikasi (' + escapeHtml(l.approvedBy) + ')' : 'Menunggu Approval'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Approve / Reject Attendance
+        async function verifyAttendance(id, isApprove) {
+            try {
+                const res = await fetch(`/api/attendance/${id}/approve`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        approvedBy: "Pusat Monitoring Database",
+                        approve: isApprove,
+                        notes: isApprove ? "Diverifikasi valid oleh Tim Monitoring" : "Ditolak verifikasi"
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    refreshAllData(false);
+                } else {
+                    alert('Gagal: ' + data.message);
+                }
+            } catch (err) {
+                alert('Kesalahan jaringan: ' + err.message);
+            }
+        }
+
+        // Modal Photo Preview
+        function openPhotoModal(id) {
+            const item = rawAttendances.find(a => a.id === id);
+            if (!item) return;
+
+            activeModalRecordId = id;
+            document.getElementById('modalTitle').innerText = `Bukti Presensi Geotag: ${item.studentName}`;
+            
+            const modalImg = document.getElementById('modalImg');
+            if (item.photoBase64) {
+                modalImg.src = `data:image/jpeg;base64,${item.photoBase64}`;
+                modalImg.style.display = 'block';
+            } else {
+                modalImg.src = 'https://dummyimage.com/600x400/1e293b/ffffff&text=Geotag+Verification+Active';
+                modalImg.style.display = 'block';
+            }
+
+            document.getElementById('modalWatermark').innerHTML = `
+                <div><strong>Siswa:</strong> ${escapeHtml(item.studentName)} (NISN: ${escapeHtml(item.studentNisn)})</div>
+                <div><strong>Mitra PKL:</strong> ${escapeHtml(item.companyName)}</div>
+                <div><strong>Waktu Presensi:</strong> ${item.formattedDate} • ${item.formattedTime} WIB (${item.type})</div>
+                <div><strong>Alamat:</strong> ${escapeHtml(item.locationAddress)}</div>
+                <div><strong>Koordinat GPS:</strong> Latitude ${item.latitude.toFixed(6)}, Longitude ${item.longitude.toFixed(6)}</div>
+                <div><strong>Radius Geofence:</strong> ${item.distanceMeters.toFixed(1)} meter (${item.distanceMeters <= 100 ? 'Memenuhi Toleransi ≤100m' : 'Melebihi Toleransi >100m'})</div>
+            `;
+
+            document.getElementById('photoModal').style.display = 'flex';
+        }
+
+        function closePhotoModal(e) {
+            if (!e || e.target.id === 'photoModal' || e.target.tagName === 'BUTTON') {
+                document.getElementById('photoModal').style.display = 'none';
+                activeModalRecordId = null;
+            }
+        }
+
+        async function approveFromModal() {
+            if (activeModalRecordId) {
+                await verifyAttendance(activeModalRecordId, true);
+                closePhotoModal();
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            refreshAllData();
+            setupAutoRefresh();
+        });
+    </script>
+</body>
+</html>

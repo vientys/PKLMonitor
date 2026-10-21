@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Richikiwir.Models"
+             x:Class="Richikiwir.Views.HistoryPage"
+             BackgroundColor="{StaticResource AppBackground}"
+             Title="History">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="18">
+
+            <!-- Header Card Summary -->
+            <Border StrokeShape="RoundRectangle 20" BackgroundColor="{StaticResource Primary}" StrokeThickness="0" Padding="18">
+                <Border.Shadow>
+                    <Shadow Brush="#1E3A8A" Offset="0,4" Radius="10" Opacity="0.25" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="LOG PRESENSI &amp; AKTIVITAS" FontSize="11" FontAttributes="Bold" TextColor="#93C5FD" CharacterSpacing="1" />
+                            <Label Text="Rekapitulasi Kehadiran PKL" FontSize="18" FontAttributes="Bold" TextColor="White" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" StrokeShape="RoundRectangle 12" BackgroundColor="#2563EB" Padding="10,4" VerticalOptions="Center">
+                            <Label Text="Semester Genap" FontSize="11" FontAttributes="Bold" TextColor="White" />
+                        </Border>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
+                        <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                            <Label Text="Total Hari" FontSize="10" TextColor="#CBD5E1" />
+                            <Label x:Name="LblTotalDays" Text="0" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="Hadir" FontSize="10" TextColor="#CBD5E1" />
+                            <Label x:Name="LblTotalHadir" Text="0" FontSize="16" FontAttributes="Bold" TextColor="#4ADE80" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="Izin/Sakit" FontSize="10" TextColor="#CBD5E1" />
+                            <Label x:Name="LblTotalIzin" Text="0" FontSize="16" FontAttributes="Bold" TextColor="#FDE047" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="Disiplin" FontSize="10" TextColor="#CBD5E1" />
+                            <Label x:Name="LblAttendanceRate" Text="0%" FontSize="16" FontAttributes="Bold" TextColor="#38BDF8" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Search Bar -->
+            <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderLight}" StrokeThickness="1" BackgroundColor="White" Padding="12,2">
+                <Grid ColumnDefinitions="24,*">
+                    <Label Text="🔍" FontSize="14" VerticalOptions="Center" TextColor="{StaticResource Gray400}" />
+                    <Entry x:Name="TxtSearch" Grid.Column="1" Placeholder="Cari riwayat tanggal atau lokasi..." 
+                           FontSize="12" TextColor="{StaticResource Gray900}" TextChanged="OnSearchTextChanged" />
+                </Grid>
+            </Border>
+
+            <!-- Filter Tabs Pills -->
+            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="8">
+                    <Button x:Name="BtnTabAll" Text="Semua Presensi" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                            Clicked="OnFilterTabClicked" CommandParameter="All" />
+                    <Button x:Name="BtnTabMasuk" Text="Masuk (Check-In)" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                            Clicked="OnFilterTabClicked" CommandParameter="Masuk" />
+                    <Button x:Name="BtnTabPulang" Text="Pulang (Check-Out)" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                            Clicked="OnFilterTabClicked" CommandParameter="Pulang" />
+                    <Button x:Name="BtnTabIzin" Text="Izin &amp; Sakit" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                            Clicked="OnFilterTabClicked" CommandParameter="Izin" />
+                    <Button x:Name="BtnTabJurnal" Text="Jurnal PKL" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                            Clicked="OnFilterTabClicked" CommandParameter="Jurnal" />
+                </HorizontalStackLayout>
+            </ScrollView>
+
+            <!-- Container Riwayat Presensi -->
+            <VerticalStackLayout x:Name="LayoutAttendanceList" Spacing="12">
+                <!-- Items populated dynamically via code-behind for rich presentation -->
+            </VerticalStackLayout>
+
+            <!-- Container Riwayat Jurnal (Bila Tab Jurnal dipilih) -->
+            <VerticalStackLayout x:Name="LayoutLogbookList" Spacing="12" IsVisible="False">
+                <!-- Jurnal items -->
+            </VerticalStackLayout>
+
+            <BoxView HeightRequest="20" Color="Transparent" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

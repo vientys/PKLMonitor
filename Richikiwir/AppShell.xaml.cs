@@ -1,0 +1,16 @@
+using Microsoft.Maui.Controls;
+using Richikiwir.Views;
+
+namespace Richikiwir
+{
+    public partial class AppShell : Shell
+    {
+        public AppShell()
+        {
+            InitializeComponent();
+            Routing.RegisterRoute(nameof(AttendancePage), typeof(AttendancePage));
+            Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
+            Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
+        }
+    }
+}

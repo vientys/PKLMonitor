@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Richikiwir.Views.SettingPage"
+             BackgroundColor="{StaticResource AppBackground}"
+             Title="Setting">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="18">
+
+            <!-- Card Profil Pengguna -->
+            <Border StrokeShape="RoundRectangle 20" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
+                    BackgroundColor="White" Padding="18">
+                <Border.Shadow>
+                    <Shadow Brush="#94A3B8" Offset="0,4" Radius="10" Opacity="0.15" />
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="60,*" ColumnSpacing="14" VerticalOptions="Center">
+                        <Border x:Name="BrdProfileAvatar" StrokeShape="RoundRectangle 30" BackgroundColor="#2563EB" 
+                                Stroke="White" StrokeThickness="2" WidthRequest="60" HeightRequest="60">
+                            <Label x:Name="LblProfileInitials" Text="RR" TextColor="White" FontSize="20" FontAttributes="Bold"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label x:Name="LblProfileName" Text="Rizky Ramadhan" FontSize="17" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+                            <Label x:Name="LblProfileId" Text="NISN: 0067821944" FontSize="12" TextColor="{StaticResource Gray600}" />
+                            
+                            <Border x:Name="BrdProfileRole" StrokeShape="RoundRectangle 8" BackgroundColor="#2563EB" 
+                                    Padding="8,2" HorizontalOptions="Start" Margin="0,2,0,0">
+                                <Label x:Name="LblProfileRole" Text="Siswa PKL" FontSize="10" FontAttributes="Bold" TextColor="White" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{StaticResource BorderLight}" />
+
+                    <!-- Rincian Lembaga & Kontak -->
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="24,*,Auto">
+                            <Label Text="🏫" FontSize="13" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Asal Sekolah" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
+                            <Label x:Name="LblProfileSchool" Grid.Column="2" Text="SMK Negeri 1 Rekayasa Teknologi" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource Gray800}" VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="24,*,Auto">
+                            <Label Text="🏢" FontSize="13" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Mitra DU/DI" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
+                            <Label x:Name="LblProfileCompany" Grid.Column="2" Text="PT Solusi Digital Nusantara" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource Gray800}" VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="24,*,Auto">
+                            <Label Text="📚" FontSize="13" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Kompetensi" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
+                            <Label x:Name="LblProfileMajor" Grid.Column="2" Text="XII Rekayasa Perangkat Lunak 1" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource Gray800}" VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="24,*,Auto">
+                            <Label Text="✉️" FontSize="13" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Email" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
+                            <Label x:Name="LblProfileEmail" Grid.Column="2" Text="rizky.rpl@smkn1pkl.sch.id" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource PrimaryLight}" VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+
+
+            <!-- Card Pengaturan Presensi & Notifikasi -->
+            <Border StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
+                    BackgroundColor="White" Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Preferensi Presensi &amp; Keamanan" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Pengingat Presensi Masuk (07:30 WIB)" FontSize="12" TextColor="{StaticResource Gray800}" />
+                            <Label Text="Notifikasi push 30 menit sebelum jam kerja DU/DI" FontSize="10" TextColor="{StaticResource Gray500}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="True" OnColor="{StaticResource PrimaryLight}" />
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{StaticResource BorderLight}" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Pengingat Presensi Pulang (17:00 WIB)" FontSize="12" TextColor="{StaticResource Gray800}" />
+                            <Label Text="Notifikasi pengisian jurnal harian dan presensi kepulangan" FontSize="10" TextColor="{StaticResource Gray500}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="True" OnColor="{StaticResource PrimaryLight}" />
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="{StaticResource BorderLight}" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Validasi Geofencing Ketat (100 Meter)" FontSize="12" TextColor="{StaticResource Gray800}" />
+                            <Label Text="Hanya izinkan presensi jika berada dalam batas area kantor mitra" FontSize="10" TextColor="{StaticResource Gray500}" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="1" IsToggled="True" OnColor="{StaticResource PrimaryLight}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Card Bantuan & Pusat Informasi Sekolah -->
+            <Border StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
+                    BackgroundColor="White" Padding="16">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Bantuan &amp; Informasi BKK PKL" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+
+                    <Button Text="📄 Unduh Buku Panduan &amp; SOP PKL 2026" FontSize="11" FontAttributes="Bold" 
+                            BackgroundColor="#F1F5F9" TextColor="{StaticResource Primary}" HeightRequest="38" CornerRadius="8"
+                            Clicked="OnDownloadSopClicked" />
+
+                    <Button Text="📞 Hubungi Panitia BKK / Call Center Sekolah" FontSize="11" FontAttributes="Bold" 
+                            BackgroundColor="#F1F5F9" TextColor="{StaticResource Gray800}" HeightRequest="38" CornerRadius="8"
+                            Clicked="OnContactCenterClicked" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Tombol Keluar (Logout) -->
+            <Button Text="🚪 Keluar dari Akun (Logout)" 
+                    FontAttributes="Bold" FontSize="13" 
+                    BackgroundColor="#FEE2E2" TextColor="#DC2626" 
+                    HeightRequest="46" CornerRadius="12"
+                    Clicked="OnLogoutClicked" />
+
+            <Label Text="SIM-PKL Mobile v2.5.0 • Build 2026.10&#10;SMK Negeri 1 Rekayasa &amp; Teknologi" 
+                   FontSize="10" TextColor="{StaticResource Gray400}" HorizontalTextAlignment="Center" Margin="0,4,0,24" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

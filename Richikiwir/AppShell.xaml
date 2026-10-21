@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="Richikiwir.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:Richikiwir.Views"
+    Title="SIM-PKL Sekolah"
+    FlyoutBehavior="Disabled"
+    Shell.BackgroundColor="{StaticResource Primary}"
+    Shell.ForegroundColor="White"
+    Shell.TitleColor="White"
+    Shell.TabBarBackgroundColor="White"
+    Shell.TabBarForegroundColor="{StaticResource Primary}"
+    Shell.TabBarUnselectedColor="{StaticResource Gray500}"
+    Shell.TabBarTitleColor="{StaticResource Primary}">
+
+    <!-- Bottom Navigation Bar: Home, History, Setting -->
+    <TabBar>
+        <Tab Title="Home" Route="Home">
+            <ShellContent
+                Title="Home"
+                ContentTemplate="{DataTemplate views:HomePage}"
+                Route="HomePage" />
+        </Tab>
+
+        <Tab Title="History" Route="History">
+            <ShellContent
+                Title="History"
+                ContentTemplate="{DataTemplate views:HistoryPage}"
+                Route="HistoryPage" />
+        </Tab>
+
+        <Tab Title="Setting" Route="Setting">
+            <ShellContent
+                Title="Setting"
+                ContentTemplate="{DataTemplate views:SettingPage}"
+                Route="SettingPage" />
+        </Tab>
+    </TabBar>
+
+</Shell>

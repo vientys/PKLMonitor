@@ -1,0 +1,30 @@
+Microsoft.Maui.Controls.Xaml.XamlParseException: Position 395:56. StaticResource not found for key Magenta
+   at Microsoft.Maui.Controls.Xaml.StaticResourceExtension.ProvideValue(IServiceProvider serviceProvider)
+   at __XamlGeneratedCode__.__Type7F192D99636F7405.InitializeComponent() in C:\Users\ThinkPad\source\repos\Richikiwir\Richikiwir\obj\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.Maui.Controls.SourceGen\Microsoft.Maui.Controls.SourceGen.XamlGenerator\Resources_Styles_Styles.xaml.xsg.cs:line 5297
+   at __XamlGeneratedCode__.__Type7F192D99636F7405..ctor() in C:\Users\ThinkPad\source\repos\Richikiwir\Richikiwir\obj\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.Maui.Controls.SourceGen\Microsoft.Maui.Controls.SourceGen.XamlGenerator\Resources_Styles_Styles.xaml.sg.cs:line 18
+   at System.RuntimeType.CreateInstanceOfT()
+--- End of stack trace from previous location ---
+   at Microsoft.Maui.Controls.ResourceDictionary.<>c__9`1.<SetAndCreateSource>b__9_0(Type _)
+   at System.Runtime.CompilerServices.ConditionalWeakTable`2.GetValue(TKey key, CreateValueCallback createValueCallback)
+   at Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource[T](Uri value)
+   at Richikiwir.App.InitializeComponent() in C:\Users\ThinkPad\source\repos\Richikiwir\Richikiwir\obj\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.Maui.Controls.SourceGen\Microsoft.Maui.Controls.SourceGen.XamlGenerator\App.xaml.xsg.cs:line 65
+   at Richikiwir.App..ctor() in C:\Users\ThinkPad\source\repos\Richikiwir\Richikiwir\App.xaml.cs:line 9
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Maui.MauiContext.WrappedServiceProvider.GetService(Type serviceType)
+   at Microsoft.Maui.MauiContext.WrappedServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at Microsoft.Maui.MauiWinUIApplication.OnLaunched(LaunchActivatedEventArgs args)
+   at Microsoft.UI.Xaml.Application.Microsoft.UI.Xaml.IApplicationOverrides.OnLaunched(LaunchActivatedEventArgs args)
+   at ABI.Microsoft.UI.Xaml.IApplicationOverrides.Do_Abi_OnLaunched_0(IntPtr thisPtr, IntPtr args)

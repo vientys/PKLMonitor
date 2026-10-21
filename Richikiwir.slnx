@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Richikiwir/Richikiwir.csproj" />
+  <Project Path="Richikiwir.Api/Richikiwir.Api.csproj" />
+</Solution>
