@@ -37,17 +37,4 @@ namespace Richikiwir.Models
         public string AvatarInitials => !string.IsNullOrEmpty(FullName) ?
             string.Concat(FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0])).ToUpper() : "SW";
     }
-
-    public class MonitoringVisit
-    {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string CompanyName { get; set; } = string.Empty;
-        public string CompanyAddress { get; set; } = string.Empty;
-        public string MonitorName { get; set; } = string.Empty;
-        public DateTime VisitDate { get; set; } = DateTime.Today;
-        public int StudentCount { get; set; } = 4;
-        public string IndustryFeedback { get; set; } = "Siswa disiplin, inisiatif tinggi dan cepat beradaptasi dengan stack teknologi.";
-        public string Status { get; set; } = "Selesai Dikunjungi";
-        public double GeneralRating { get; set; } = 4.8;
-    }
 }

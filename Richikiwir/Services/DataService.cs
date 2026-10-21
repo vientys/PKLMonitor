@@ -16,7 +16,6 @@ namespace Richikiwir.Services
         public ObservableCollection<AttendanceRecord> Attendances { get; } = new();
         public ObservableCollection<LogbookEntry> Logbooks { get; } = new();
         public ObservableCollection<StudentInternSummary> Students { get; } = new();
-        public ObservableCollection<MonitoringVisit> MonitoringVisits { get; } = new();
 
         public event Action? DataChanged;
 

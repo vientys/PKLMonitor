@@ -468,6 +468,97 @@
         .btn-map { background: #3B82F6; color: white; text-decoration: none; }
         .btn-map:hover { background: #2563EB; }
 
+        /* Pagination Controls */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--gray-200);
+            font-size: 12px;
+            color: var(--gray-600);
+        }
+
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--gray-600);
+        }
+
+        .pagination-info strong {
+            color: var(--gray-900);
+        }
+
+        .pagination-buttons {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .page-btn {
+            background: white;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            user-select: none;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--gray-100);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+        }
+
+        .page-btn:disabled {
+            background: var(--gray-100);
+            border-color: var(--gray-200);
+            color: var(--gray-400);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--gray-600);
+        }
+
+        .page-size-selector select {
+            padding: 5px 8px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--gray-800);
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
         /* Role Filter Chips */
         .role-chips {
             display: flex;
@@ -564,7 +655,7 @@
                     <h1 class="brand-title">SMKN 5 KAB. TANGERANG • Monitoring Presensi PKL</h1>
                     <div class="brand-subtitle">
                         <span class="server-status-pill"></span>
-                        <span>Database Fisik SQLite: <strong>pkl_database.db</strong> • Sinkron Realtime dengan Aplikasi Mobile</span>
+                        <span>API Online • Terhubung Database SQLite (Normalisasi 3NF)</span>
                     </div>
                 </div>
             </div>
@@ -620,20 +711,24 @@
 
         <!-- Navigation Tabs -->
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('tab-absensi')">
-                📸 Monitoring Absensi, Foto &amp; Geotag GPS
+            <button class="tab-btn active" onclick="switchTab('tab-absensi', this)">
+                📸 Monitoring Absensi
                 <span class="tab-badge" id="badgeCountAtt">0</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('tab-akun')">
-                👥 Database Akun (Semua Role)
+            <button class="tab-btn" onclick="switchTab('tab-jurusan', this)">
+                📁 Direktori 10 Jurusan
+                <span class="tab-badge">10</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-akun', this)">
+                👥 Database Akun
                 <span class="tab-badge" id="badgeCountUsers">0</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('tab-jurnal')">
-                📖 Monitoring Jurnal Harian (Logbook)
+            <button class="tab-btn" onclick="switchTab('tab-jurnal', this)">
+                📖 Jurnal Logbook
                 <span class="tab-badge" id="badgeCountLogs">0</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('tab-server')">
-                ⚡ Status Server &amp; Database
+            <button class="tab-btn" onclick="switchTab('tab-server', this)">
+                ⚡ Status 3NF &amp; Server
             </button>
         </div>
 
@@ -671,8 +766,46 @@
                     </div>
                 </div>
 
+                <!-- Jurusan Directory Filter Chips -->
+                <div style="margin-bottom: 14px;">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; text-transform: uppercase;">Direktori Jurusan:</div>
+                    <div class="role-chips" id="jurusanChipsAtt">
+                        <button class="role-chip active" onclick="filterJurusan('ALL', this)">📁 Semua Jurusan</button>
+                        <button class="role-chip" onclick="filterJurusan('RPL', this)">💻 RPL</button>
+                        <button class="role-chip" onclick="filterJurusan('DKV', this)">🎨 DKV</button>
+                        <button class="role-chip" onclick="filterJurusan('PH', this)">🏨 PH</button>
+                        <button class="role-chip" onclick="filterJurusan('TKJ', this)">🌐 TKJ</button>
+                        <button class="role-chip" onclick="filterJurusan('TSM', this)">🏍️ TSM</button>
+                        <button class="role-chip" onclick="filterJurusan('TKR', this)">🚗 TKR</button>
+                        <button class="role-chip" onclick="filterJurusan('TPM', this)">⚙️ TPM</button>
+                        <button class="role-chip" onclick="filterJurusan('MP', this)">📑 MP</button>
+                        <button class="role-chip" onclick="filterJurusan('AK', this)">💰 AK</button>
+                        <button class="role-chip" onclick="filterJurusan('APHPI', this)">🐟 APHPI</button>
+                    </div>
+                </div>
+
                 <div class="attendance-grid" id="attendanceGrid">
                     <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB DIREKTORI 10 JURUSAN                   -->
+        <!-- ========================================== -->
+        <div id="tab-jurusan" style="display: none;">
+            <div class="content-card">
+                <div class="content-header">
+                    <div>
+                        <div class="content-title">📁 Direktori 10 Jurusan Resmi SMKN 5 Kab. Tangerang</div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
+                            Penyimpanan akun, presensi, dan data jurnal PKL terpartisi otomatis per direktori jurusan fisik (storage/jurusan/{KODE}/).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="attendance-grid" id="jurusanCardsGrid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+                    <!-- Populated dynamically via /api/jurusan -->
                 </div>
             </div>
         </div>
@@ -684,20 +817,44 @@
             <div class="content-card">
                 <div class="content-header">
                     <div>
-                        <div class="content-title">👥 Seluruh Akun Pengguna Tersimpan di Database</div>
+                        <div class="content-title">👥 Daftar Akun &amp; Siswa PKL</div>
                         <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
-                            Menampilkan seluruh akun untuk setiap role (Siswa, Pembimbing Industri, Guru Pembimbing, Monitor, Admin).
+                            Menampilkan direktori siswa dan akun pengguna (Siswa PKL, Pembimbing Industri, Guru, Admin) tersimpan dalam sistem 3NF.
                         </p>
+                    </div>
+
+                    <!-- Search Filter Control -->
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="searchUsers" placeholder="🔍 Cari Siswa, NIS, Jurusan, Kelas..." 
+                               oninput="onSearchUsers()" 
+                               style="padding: 7px 12px; font-size: 12px; border: 1px solid var(--gray-300); border-radius: 8px; outline: none; min-width: 260px;">
+                    </div>
+                </div>
+
+                <!-- Jurusan & Role Filter Chips -->
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; text-transform: uppercase;">Filter Direktori Jurusan:</div>
+                    <div class="role-chips" id="jurusanChipsAkun">
+                        <button class="role-chip active" onclick="filterJurusanAkun('ALL', this)">📁 Semua Jurusan</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('RPL', this)">💻 RPL</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('DKV', this)">🎨 DKV</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('PH', this)">🏨 PH</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TKJ', this)">🌐 TKJ</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TSM', this)">🏍️ TSM</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TKR', this)">🚗 TKR</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TPM', this)">⚙️ TPM</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('MP', this)">📑 MP</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('AK', this)">💰 AK</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('APHPI', this)">🐟 APHPI</button>
                     </div>
                 </div>
 
                 <!-- Role Filter Chips -->
-                <div class="role-chips">
+                <div class="role-chips" id="roleChipsAkun">
                     <button class="role-chip active" onclick="filterUsersRole('ALL', this)">Semua Role</button>
                     <button class="role-chip" onclick="filterUsersRole('Siswa', this)">🎓 Siswa PKL</button>
                     <button class="role-chip" onclick="filterUsersRole('PembimbingIndustri', this)">🏢 Pembimbing Industri (DU/DI)</button>
                     <button class="role-chip" onclick="filterUsersRole('PembimbingSekolah', this)">🏫 Guru Pembimbing</button>
-                    <button class="role-chip" onclick="filterUsersRole('Monitor', this)">📊 Koordinator Monitor</button>
                     <button class="role-chip" onclick="filterUsersRole('Admin', this)">⚙️ Administrator</button>
                 </div>
 
@@ -707,8 +864,9 @@
                             <tr>
                                 <th>Peran (Role)</th>
                                 <th>Nama Lengkap</th>
-                                <th>Identitas (NISN/NIP)</th>
-                                <th>Asal Sekolah / Kampus</th>
+                                <th>Login ID (NIS / NIP / NIK)</th>
+                                <th>Jurusan / Kelas</th>
+                                <th>Asal Sekolah</th>
                                 <th>Perusahaan / Mitra DU/DI</th>
                                 <th>Status Riwayat</th>
                                 <th>Email / Kontak</th>
@@ -718,6 +876,17 @@
                             <!-- Populated dynamically -->
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination Bar -->
+                <div class="pagination-container" id="userPaginationContainer">
+                    <div class="pagination-info" id="userPaginationInfo">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <div class="pagination-buttons" id="userPaginationButtons">
+                        <!-- Next / Prev / Page number buttons populated dynamically -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -787,7 +956,6 @@
 
                 <div style="background: #0F172A; color: #E2E8F0; padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6;">
                     <div style="color: #38BDF8; font-weight: 700; margin-bottom: 6px;">// Daftar Endpoint REST API Siap Digunakan Aplikasi Mobile:</div>
-                    <div>POST   /api/auth/register       -> Mendaftarkan akun (riwayat awal otomatis 0)</div>
                     <div>POST   /api/auth/login          -> Autentikasi akun &amp; role</div>
                     <div>POST   /api/attendance/check-in -> Simpan presensi masuk (dengan foto &amp; koordinat GPS)</div>
                     <div>POST   /api/attendance/check-out-> Simpan presensi pulang</div>
@@ -825,9 +993,15 @@
         let rawAttendances = [];
         let rawUsers = [];
         let rawLogbooks = [];
+        let rawJurusan = [];
         let activeRoleFilter = 'ALL';
+        let activeJurusanFilter = 'ALL';
+        let activeJurusanFilterAkun = 'ALL';
         let autoRefreshTimer = null;
         let activeModalRecordId = null;
+        let userCurrentPage = 1;
+        let userPageSize = 10;
+        let userSearchQuery = '';
 
         // Auto Refresh Timer
         function setupAutoRefresh() {
@@ -842,14 +1016,56 @@
             setupAutoRefresh();
         }
 
-        function switchTab(tabId) {
+        function switchTab(tabId, el) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            ['tab-absensi', 'tab-akun', 'tab-jurnal', 'tab-server'].forEach(id => {
-                document.getElementById(id).style.display = 'none';
+            ['tab-absensi', 'tab-jurusan', 'tab-akun', 'tab-jurnal', 'tab-server'].forEach(id => {
+                const target = document.getElementById(id);
+                if (target) target.style.display = 'none';
             });
 
-            document.getElementById(tabId).style.display = 'block';
-            event.currentTarget.classList.add('active');
+            const activeEl = document.getElementById(tabId);
+            if (activeEl) activeEl.style.display = 'block';
+
+            if (el && el.classList) {
+                el.classList.add('active');
+            } else {
+                const matchedBtn = document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
+                if (matchedBtn) matchedBtn.classList.add('active');
+            }
+        }
+
+        function filterJurusan(jur, btn) {
+            activeJurusanFilter = jur;
+            document.querySelectorAll('#jurusanChipsAtt .role-chip').forEach(c => c.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderAttendanceList();
+        }
+
+        function filterJurusanAkun(jur, btn) {
+            activeJurusanFilterAkun = jur;
+            userCurrentPage = 1;
+            document.querySelectorAll('#jurusanChipsAkun .role-chip').forEach(c => c.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderUserTable();
+        }
+
+        function openJurusanDirectoryTab(kode) {
+            switchTab('tab-akun');
+            userCurrentPage = 1;
+            const targetBtn = Array.from(document.querySelectorAll('#jurusanChipsAkun .role-chip'))
+                .find(b => b.innerText.includes(kode));
+            if (targetBtn) {
+                filterJurusanAkun(kode, targetBtn);
+            }
+        }
+
+        function openJurusanDirectoryAtt(kode) {
+            switchTab('tab-absensi');
+            const targetBtn = Array.from(document.querySelectorAll('#jurusanChipsAtt .role-chip'))
+                .find(b => b.innerText.includes(kode));
+            if (targetBtn) {
+                filterJurusan(kode, targetBtn);
+            }
         }
 
         async function refreshAllData(showIndicator = true) {
@@ -896,6 +1112,14 @@
                     rawLogbooks = logJson.data || [];
                     renderLogbookTable();
                 }
+
+                // Fetch 10 Jurusan Directories
+                const jurRes = await fetch('/api/jurusan');
+                const jurJson = await jurRes.json();
+                if (jurJson.success) {
+                    rawJurusan = jurJson.data || [];
+                    renderJurusanDirectoryCards();
+                }
             } catch (err) {
                 console.error('Gagal mengambil data monitoring:', err);
             } finally {
@@ -903,6 +1127,62 @@
                     document.querySelector('.btn-refresh').innerText = '🔄 Segarkan Data';
                 }
             }
+        }
+
+        // Render 10 Jurusan Directory Cards
+        function renderJurusanDirectoryCards() {
+            const container = document.getElementById('jurusanCardsGrid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const icons = {
+                RPL: '💻', DKV: '🎨', PH: '🏨', TKJ: '🌐', TSM: '🏍️',
+                TKR: '🚗', TPM: '⚙️', MP: '📑', AK: '💰', APHPI: '🐟'
+            };
+
+            rawJurusan.forEach(j => {
+                const card = document.createElement('div');
+                card.className = 'att-card';
+                card.style.background = 'white';
+                card.style.border = '1px solid var(--gray-200)';
+                card.style.borderRadius = 'var(--radius-lg)';
+                card.style.padding = '18px';
+
+                const icon = icons[j.kode] || '📁';
+                const rombelList = (j.daftarKelas || []).join(', ');
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 26px; background: var(--gray-100); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+                                ${icon}
+                            </div>
+                            <div>
+                                <h3 style="font-size: 15px; font-weight: 800; color: var(--gray-900);">${escapeHtml(j.kode)}</h3>
+                                <div style="font-size: 11px; color: var(--gray-600);">${escapeHtml(j.nama)}</div>
+                            </div>
+                        </div>
+                        <span class="badge" style="background: #E0E7FF; color: #3730A3;">Direktori Aktif</span>
+                    </div>
+
+                    <div style="font-size: 11px; color: var(--gray-700); display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
+                        <div><strong>📁 Jalur Direktori Fisik:</strong> <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--gray-100); padding: 2px 6px; border-radius: 4px;">${escapeHtml(j.directoryPath)}/</code></div>
+                        <div><strong>👥 Siswa Terdaftar:</strong> <span style="font-weight: 700; color: var(--primary);">${j.totalSiswa} Siswa</span></div>
+                        <div><strong>📍 Presensi Tercatat:</strong> <span style="font-weight: 700; color: var(--success);">${j.totalPresensi} Presensi</span></div>
+                        <div><strong>🏫 Rombel / Kelas:</strong> ${escapeHtml(rombelList || '-')}</div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; border-top: 1px dashed var(--gray-200); padding-top: 10px;">
+                        <button class="btn-action" style="background: var(--primary); color: white; flex: 1; justify-content: center; padding: 7px 10px;" onclick="openJurusanDirectoryTab('${j.kode}')">
+                            👥 Buka Akun (${j.totalSiswa})
+                        </button>
+                        <button class="btn-action" style="background: var(--success); color: white; flex: 1; justify-content: center; padding: 7px 10px;" onclick="openJurusanDirectoryAtt('${j.kode}')">
+                            📍 Buka Presensi (${j.totalPresensi})
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         }
 
         // Render Attendance Cards
@@ -915,11 +1195,16 @@
             const filterRadius = document.getElementById('filterRadius').value;
 
             let filtered = rawAttendances.filter(a => {
+                if (activeJurusanFilter !== 'ALL') {
+                    if ((a.jurusanCode || '').toUpperCase() !== activeJurusanFilter) return false;
+                }
+
                 if (search) {
                     const matchName = (a.studentName || '').toLowerCase().includes(search);
                     const matchNisn = (a.studentNisn || '').toLowerCase().includes(search);
+                    const matchNis = (a.studentNis || '').toLowerCase().includes(search);
                     const matchComp = (a.companyName || '').toLowerCase().includes(search);
-                    if (!matchName && !matchNisn && !matchComp) return false;
+                    if (!matchName && !matchNisn && !matchNis && !matchComp) return false;
                 }
 
                 if (filterType !== 'ALL') {
@@ -938,10 +1223,12 @@
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: 12px; border: 1px dashed var(--gray-300);">
-                        <div style="font-size: 36px; margin-bottom: 8px;">📋</div>
-                        <div style="font-weight: 700; color: var(--gray-700);">Tidak Ada Data Presensi Sesuai Filter</div>
-                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Data presensi yang dikirim dari aplikasi mobile akan langsung muncul di sini.</p>
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background: white; border-radius: 12px; border: 1.5px dashed var(--gray-300);">
+                        <div style="font-size: 40px; margin-bottom: 8px;">📋</div>
+                        <div style="font-size: 16px; font-weight: 700; color: var(--gray-800);">Daftar Presensi Masih Kosong</div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 6px; max-width: 540px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+                            Belum ada data presensi yang masuk. Siswa melakukan presensi dari aplikasi mobile sesuai direktori jurusannya masing-masing (RPL, DKV, PH, TKJ, TSM, TKR, TPM, MP, AK, APHPI) dan data akan langsung tersimpan di direktori jurusan terkait.
+                        </p>
                     </div>
                 `;
                 return;
@@ -958,7 +1245,6 @@
 
                 const typeClass = 'badge-' + (item.type || 'masuk').toLowerCase();
 
-                // Photo preview logic: Real Base64 or Geotag Camera Snapshot Simulation
                 let photoHtml = '';
                 if (item.photoBase64) {
                     photoHtml = `<img src="data:image/jpeg;base64,${item.photoBase64}" alt="Foto Selfie">`;
@@ -972,8 +1258,8 @@
                 card.innerHTML = `
                     <div class="att-card-top">
                         <div>
-                            <div class="att-student-name">${escapeHtml(item.studentName || 'Siswa')}</div>
-                            <div class="att-student-sub">NISN: ${escapeHtml(item.studentNisn || '-')} • ${escapeHtml(item.companyName || 'Mitra PKL')}</div>
+                            <div class="att-student-name">${escapeHtml(item.studentName || 'Siswa')} <span class="badge" style="background:#E0E7FF; color:#3730A3; font-size:9px;">${escapeHtml(item.jurusanCode || 'RPL')}</span></div>
+                            <div class="att-student-sub">NIS: ${escapeHtml(item.studentNis || item.studentNisn || '-')} • ${escapeHtml(item.companyName || 'Mitra PKL')}</div>
                         </div>
                         <span class="badge ${typeClass}">${item.type}</span>
                     </div>
@@ -1033,12 +1319,29 @@
             });
         }
 
-        // Render User Accounts Table
+        // Render User Accounts Table with Pagination & Search
         function filterUsersRole(role, btn) {
             activeRoleFilter = role;
-            document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
+            userCurrentPage = 1;
+            document.querySelectorAll('#roleChipsAkun .role-chip').forEach(c => c.classList.remove('active'));
+            if (btn) btn.classList.add('active');
             renderUserTable();
+        }
+
+        function onSearchUsers() {
+            const input = document.getElementById('searchUsers');
+            userSearchQuery = input ? input.value.trim().toLowerCase() : '';
+            userCurrentPage = 1;
+            renderUserTable();
+        }
+
+        function changeUserPage(page) {
+            userCurrentPage = page;
+            renderUserTable();
+            const tableCard = document.getElementById('tab-akun');
+            if (tableCard) {
+                tableCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         function renderUserTable() {
@@ -1050,38 +1353,185 @@
                 filtered = filtered.filter(u => u.role === activeRoleFilter);
             }
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--gray-600);">Tidak ada akun yang sesuai peran ini.</td></tr>`;
+            if (activeJurusanFilterAkun !== 'ALL') {
+                filtered = filtered.filter(u => (u.jurusanCode || '').toUpperCase() === activeJurusanFilterAkun);
+            }
+
+            if (userSearchQuery) {
+                const q = userSearchQuery;
+                filtered = filtered.filter(u =>
+                    (u.fullName || '').toLowerCase().includes(q) ||
+                    (u.identifier || '').toLowerCase().includes(q) ||
+                    (u.username || '').toLowerCase().includes(q) ||
+                    (u.majorOrDepartment || '').toLowerCase().includes(q) ||
+                    (u.jurusanCode || '').toLowerCase().includes(q) ||
+                    (u.schoolName || '').toLowerCase().includes(q) ||
+                    (u.companyName || '').toLowerCase().includes(q) ||
+                    (u.email || '').toLowerCase().includes(q) ||
+                    (u.phoneNumber || '').toLowerCase().includes(q)
+                );
+            }
+
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / userPageSize) || 1;
+
+            if (userCurrentPage > totalPages) {
+                userCurrentPage = totalPages;
+            }
+            if (userCurrentPage < 1) {
+                userCurrentPage = 1;
+            }
+
+            const startIndex = (userCurrentPage - 1) * userPageSize;
+            const endIndex = Math.min(startIndex + userPageSize, totalItems);
+            const pageData = filtered.slice(startIndex, endIndex);
+
+            if (totalItems === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 36px 16px; color: var(--gray-600);">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+                    <div style="font-weight: 700; color: var(--gray-800); font-size: 14px;">Tidak ada data siswa atau akun yang ditemukan</div>
+                    <div style="font-size: 12px; margin-top: 4px; color: var(--gray-500);">Coba ubah kata kunci pencarian, filter direktori jurusan, atau filter peran (role).</div>
+                </td></tr>`;
+            } else {
+                pageData.forEach((u, idx) => {
+                    const rowNumber = startIndex + idx + 1;
+                    const tr = document.createElement('tr');
+                    const roleClass = 'badge-role-' + (u.role || '').toLowerCase();
+
+                    let historyStatus = '';
+                    if (u.isNewAccount) {
+                        historyStatus = `<span class="badge" style="background: #E2E8F0; color: #475569;">Akun Baru (0 Presensi)</span>`;
+                    } else {
+                        historyStatus = `<span class="badge badge-radius-ok">Aktif (${u.attendanceCount} Absen, ${u.logbookCount} Jurnal)</span>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 11px; font-weight: 700; color: var(--gray-400); min-width: 22px;">#${rowNumber}</span>
+                                <span class="badge ${roleClass}">${escapeHtml(u.roleName || u.role)}</span>
+                            </div>
+                        </td>
+                        <td><strong>${escapeHtml(u.fullName)}</strong></td>
+                        <td><code style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">${escapeHtml(u.identifier)}</code></td>
+                        <td><span class="badge" style="background:#EEF2FF; color:#4338CA; font-weight:700;">${escapeHtml(u.majorOrDepartment || '-')}</span></td>
+                        <td>${escapeHtml(u.schoolName || '-')}</td>
+                        <td>${escapeHtml(u.companyName || '-')}</td>
+                        <td>${historyStatus}</td>
+                        <td>
+                            <div>${escapeHtml(u.email || '-')}</div>
+                            <div style="font-size: 10px; color: var(--gray-600);">${escapeHtml(u.phoneNumber || '-')}</div>
+                        </td>
+                    `;
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            renderUserPaginationControls(totalItems, totalPages, startIndex, endIndex);
+        }
+
+        function renderUserPaginationControls(totalItems, totalPages, startIndex, endIndex) {
+            const infoEl = document.getElementById('userPaginationInfo');
+            const btnsContainer = document.getElementById('userPaginationButtons');
+
+            if (!infoEl || !btnsContainer) return;
+
+            const isStudentOnly = activeRoleFilter === 'Siswa';
+            const entityLabel = isStudentOnly ? 'siswa' : 'akun pengguna';
+
+            if (totalItems === 0) {
+                infoEl.innerHTML = `Menampilkan <strong>0</strong> dari <strong>0</strong> ${entityLabel}`;
+                btnsContainer.innerHTML = '';
                 return;
             }
 
-            filtered.forEach(u => {
-                const tr = document.createElement('tr');
-                const roleClass = 'badge-role-' + (u.role || '').toLowerCase();
+            infoEl.innerHTML = `Menampilkan baris <strong>${startIndex + 1} - ${endIndex}</strong> dari total <strong>${totalItems}</strong> ${entityLabel} (Halaman <strong>${userCurrentPage}</strong> dari <strong>${totalPages}</strong>)`;
 
-                // Status history indicator
-                let historyStatus = '';
-                if (u.isNewAccount) {
-                    historyStatus = `<span class="badge" style="background: #E2E8F0; color: #475569;">Akun Baru (0 Presensi)</span>`;
-                } else {
-                    historyStatus = `<span class="badge badge-radius-ok">Aktif (${u.attendanceCount} Absen, ${u.logbookCount} Jurnal)</span>`;
+            btnsContainer.innerHTML = '';
+
+            // First Page «
+            const firstBtn = document.createElement('button');
+            firstBtn.className = 'page-btn';
+            firstBtn.innerHTML = '«';
+            firstBtn.title = 'Halaman Pertama';
+            firstBtn.disabled = (userCurrentPage <= 1);
+            firstBtn.onclick = () => changeUserPage(1);
+            btnsContainer.appendChild(firstBtn);
+
+            // Previous Page ‹
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '‹ Sebelumnya';
+            prevBtn.title = 'Halaman Sebelumnya';
+            prevBtn.disabled = (userCurrentPage <= 1);
+            prevBtn.onclick = () => changeUserPage(userCurrentPage - 1);
+            btnsContainer.appendChild(prevBtn);
+
+            // Page Number Buttons with sliding window
+            let startPage = Math.max(1, userCurrentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            if (startPage > 1) {
+                const btn1 = document.createElement('button');
+                btn1.className = 'page-btn';
+                btn1.innerText = '1';
+                btn1.onclick = () => changeUserPage(1);
+                btnsContainer.appendChild(btn1);
+
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.innerText = '...';
+                    dots.style.padding = '0 4px';
+                    dots.style.color = 'var(--gray-400)';
+                    btnsContainer.appendChild(dots);
+                }
+            }
+
+            for (let p = startPage; p <= endPage; p++) {
+                const pBtn = document.createElement('button');
+                pBtn.className = `page-btn ${p === userCurrentPage ? 'active' : ''}`;
+                pBtn.innerText = p;
+                pBtn.onclick = () => changeUserPage(p);
+                btnsContainer.appendChild(pBtn);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.innerText = '...';
+                    dots.style.padding = '0 4px';
+                    dots.style.color = 'var(--gray-400)';
+                    btnsContainer.appendChild(dots);
                 }
 
-                tr.innerHTML = `
-                    <td><span class="badge ${roleClass}">${escapeHtml(u.roleName || u.role)}</span></td>
-                    <td><strong>${escapeHtml(u.fullName)}</strong></td>
-                    <td><code style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">${escapeHtml(u.identifier)}</code></td>
-                    <td>${escapeHtml(u.schoolName || '-')}</td>
-                    <td>${escapeHtml(u.companyName || '-')}</td>
-                    <td>${historyStatus}</td>
-                    <td>
-                        <div>${escapeHtml(u.email || '-')}</div>
-                        <div style="font-size: 10px; color: var(--gray-600);">${escapeHtml(u.phoneNumber || '-')}</div>
-                    </td>
-                `;
+                const btnLast = document.createElement('button');
+                btnLast.className = 'page-btn';
+                btnLast.innerText = totalPages;
+                btnLast.onclick = () => changeUserPage(totalPages);
+                btnsContainer.appendChild(btnLast);
+            }
 
-                tbody.appendChild(tr);
-            });
+            // Next Page ›
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = 'Berikutnya ›';
+            nextBtn.title = 'Halaman Berikutnya (Next Page)';
+            nextBtn.disabled = (userCurrentPage >= totalPages);
+            nextBtn.onclick = () => changeUserPage(userCurrentPage + 1);
+            btnsContainer.appendChild(nextBtn);
+
+            // Last Page »
+            const lastBtn = document.createElement('button');
+            lastBtn.className = 'page-btn';
+            lastBtn.innerHTML = '»';
+            lastBtn.title = 'Halaman Terakhir';
+            lastBtn.disabled = (userCurrentPage >= totalPages);
+            lastBtn.onclick = () => changeUserPage(totalPages);
+            btnsContainer.appendChild(lastBtn);
         }
 
         // Render Logbook Table

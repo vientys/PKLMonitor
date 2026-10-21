@@ -10,4 +10,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties storage_4jurusan_4rpl_4accounts_420241001_1json__JsonSchema="https://acp-protocol.dev/schemas/v1/primer.schema.json" /></VisualStudio></ProjectExtensions>
+
 </Project>

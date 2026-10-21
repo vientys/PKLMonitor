@@ -4,11 +4,10 @@ namespace Richikiwir.Models
 {
     public enum UserRole
     {
-        Siswa,
-        PembimbingIndustri,
-        PembimbingSekolah,
-        Monitor,
-        Admin
+        Siswa = 0,
+        PembimbingIndustri = 1,
+        PembimbingSekolah = 2,
+        Admin = 4
     }
 
     public class UserModel
@@ -23,20 +22,24 @@ namespace Richikiwir.Models
             UserRole.Siswa => "Siswa PKL",
             UserRole.PembimbingIndustri => "Pembimbing Industri (DU/DI)",
             UserRole.PembimbingSekolah => "Pembimbing Sekolah (Guru)",
-            UserRole.Monitor => "Tim Monitoring",
             UserRole.Admin => "Administrator PKL",
             _ => "Pengguna"
         };
 
-        public string Identifier { get; set; } = string.Empty; // NISN / NIP / ID Karyawan
+        public string Identifier { get; set; } = string.Empty; // NIS / NIP / ID Karyawan / Username
+        public string Username { get; set; } = string.Empty;
+        public string JurusanCode { get; set; } = "RPL";
+        public string JurusanName { get; set; } = "Rekayasa Perangkat Lunak";
         public string IdentifierLabel => Role switch
         {
-            UserRole.Siswa => "NISN",
-            UserRole.PembimbingIndustri => "ID Karyawan / NIK",
-            _ => "NIP / ID Petugas"
+            UserRole.Siswa => "NIS (Nomor Induk Siswa)",
+            UserRole.PembimbingIndustri => "NIK / ID Karyawan",
+            UserRole.PembimbingSekolah => "NIP (Nomor Induk Pegawai)",
+            UserRole.Admin => "Username Admin",
+            _ => "Identitas Pengguna"
         };
 
-        public string SchoolName { get; set; } = "SMK Negeri 1 Rekayasa & Teknologi";
+        public string SchoolName { get; set; } = "SMK Negeri 5 Kabupaten Tangerang";
         public string CompanyName { get; set; } = "PT Solusi Digital Nusantara";
         public string MajorOrDepartment { get; set; } = "Rekayasa Perangkat Lunak (RPL)";
         public string PhoneNumber { get; set; } = "0812-3456-7890";
@@ -48,7 +51,6 @@ namespace Richikiwir.Models
             UserRole.Siswa => "#2563EB",            // Blue
             UserRole.PembimbingIndustri => "#059669",// Emerald
             UserRole.PembimbingSekolah => "#7C3AED", // Purple
-            UserRole.Monitor => "#D97706",          // Amber
             UserRole.Admin => "#DC2626",            // Crimson
             _ => "#4B5563"
         };
@@ -60,7 +62,7 @@ namespace Richikiwir.Models
             Email = "-",
             Role = UserRole.Siswa,
             Identifier = "-",
-            SchoolName = "SMK Negeri 1 Rekayasa & Teknologi",
+            SchoolName = "SMK Negeri 5 Kabupaten Tangerang",
             CompanyName = "Mitra Industri",
             MajorOrDepartment = "Kompetensi Keahlian"
         };

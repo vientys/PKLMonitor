@@ -9,7 +9,6 @@ namespace Richikiwir
         {
             InitializeComponent();
             Routing.RegisterRoute(nameof(AttendancePage), typeof(AttendancePage));
-            Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
             Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
         }
     }

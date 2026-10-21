@@ -32,7 +32,6 @@ namespace Richikiwir.Views
             ResetButtonStyle(BtnRoleSiswa, "🎓 Siswa");
             ResetButtonStyle(BtnRoleIndustri, "🏢 Pembimbing Industri");
             ResetButtonStyle(BtnRoleSekolah, "🏫 Guru Sekolah");
-            ResetButtonStyle(BtnRoleMonitor, "📋 Tim Monitor");
             ResetButtonStyle(BtnRoleAdmin, "⚙️ Admin PKL");
 
             // Highlight selected button & update info
@@ -41,32 +40,31 @@ namespace Richikiwir.Views
                 case UserRole.Siswa:
                     SetSelectedButtonStyle(BtnRoleSiswa, "#2563EB");
                     LblRoleInfo.Text = "Masuk sebagai Siswa PKL: Mengakses absensi live GPS, selfie kehadiran, & jurnal harian.";
-                    LblIdentifier.Text = "NISN (Nomor Induk Siswa Nasional):";
-                    TxtIdentifier.Placeholder = "Masukkan 10 digit NISN atau Email";
+                    LblIdentifier.Text = "NIS (Nomor Induk Siswa):";
+                    TxtIdentifier.Placeholder = "Masukkan NIS (misal: 20241001) atau NISN";
+                    LayoutJurusanPicker.IsVisible = true;
+                    if (PickerJurusan.SelectedIndex < 0) PickerJurusan.SelectedIndex = 0;
                     break;
                 case UserRole.PembimbingIndustri:
                     SetSelectedButtonStyle(BtnRoleIndustri, "#059669");
                     LblRoleInfo.Text = "Masuk sebagai Mentor DU/DI: Verifikasi kehadiran real-time dan nilai jurnal logbook siswa.";
-                    LblIdentifier.Text = "ID Karyawan / NIK Industri:";
-                    TxtIdentifier.Placeholder = "Masukkan ID Karyawan atau Email";
+                    LblIdentifier.Text = "NIK / ID Karyawan Industri:";
+                    TxtIdentifier.Placeholder = "Masukkan NIK / ID Karyawan (misal: SDN-2024-089)";
+                    LayoutJurusanPicker.IsVisible = false;
                     break;
                 case UserRole.PembimbingSekolah:
                     SetSelectedButtonStyle(BtnRoleSekolah, "#7C3AED");
                     LblRoleInfo.Text = "Masuk sebagai Guru Pembimbing: Pantau kehadiran siswa, verifikasi izin, & koordinasi mitra.";
                     LblIdentifier.Text = "NIP (Nomor Induk Pegawai Guru):";
-                    TxtIdentifier.Placeholder = "Masukkan NIP Guru atau Email";
-                    break;
-                case UserRole.Monitor:
-                    SetSelectedButtonStyle(BtnRoleMonitor, "#D97706");
-                    LblRoleInfo.Text = "Masuk sebagai Tim Monitoring: Inspeksi lapangan ke industri, evaluasi fasilitas & kelayakan PKL.";
-                    LblIdentifier.Text = "NIP / ID Tim Monitoring:";
-                    TxtIdentifier.Placeholder = "Masukkan NIP Tim Monitoring atau Email";
+                    TxtIdentifier.Placeholder = "Masukkan 18 digit NIP Guru";
+                    LayoutJurusanPicker.IsVisible = false;
                     break;
                 case UserRole.Admin:
                     SetSelectedButtonStyle(BtnRoleAdmin, "#DC2626");
                     LblRoleInfo.Text = "Masuk sebagai Administrator: Kelola data master siswa, pemetaan industri, & export rekap.";
-                    LblIdentifier.Text = "ID Administrator PKL:";
-                    TxtIdentifier.Placeholder = "Masukkan ID Administrator atau Email";
+                    LblIdentifier.Text = "Username Administrator:";
+                    TxtIdentifier.Placeholder = "Masukkan Username Admin (misal: admin_pkl)";
+                    LayoutJurusanPicker.IsVisible = false;
                     break;
             }
         }
@@ -95,7 +93,7 @@ namespace Richikiwir.Views
 
             if (string.IsNullOrEmpty(id))
             {
-                await DisplayAlertAsync("Peringatan", "Silakan masukkan nomor identitas (NISN/NIP) atau email Anda.", "OK");
+                await DisplayAlertAsync("Peringatan", "Silakan masukkan nomor identitas (NIS/NIP/NIK) atau username Anda.", "OK");
                 return;
             }
 
@@ -105,23 +103,35 @@ namespace Richikiwir.Views
                 return;
             }
 
-            var result = AuthService.Current.Login(id, pass, _selectedRole);
-            if (!result.Success)
+            BtnLogin.IsEnabled = false;
+            BtnLogin.Text = "Memverifikasi...";
+
+            string? selectedJurusan = null;
+            if (_selectedRole == UserRole.Siswa && PickerJurusan.SelectedItem is string jurStr)
             {
-                await DisplayAlertAsync("Gagal Masuk", result.Message, "OK");
-                return;
+                selectedJurusan = jurStr.Split(' ')[0]; // Ambil kode jurusan "RPL", "DKV", dll.
             }
 
-            // Arahkan ke dashboard utama setelah autentikasi berhasil
-            if (Application.Current?.Windows.Count > 0)
+            try
             {
-                Application.Current.Windows[0].Page = new AppShell();
-            }
-        }
+                var result = await AuthService.Current.LoginAsync(id, pass, _selectedRole, selectedJurusan);
+                if (!result.Success)
+                {
+                    await DisplayAlertAsync("Gagal Masuk", result.Message, "OK");
+                    return;
+                }
 
-        private async void OnRegisterTapped(object? sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new RegisterPage());
+                // Arahkan ke dashboard utama setelah autentikasi berhasil
+                if (Application.Current?.Windows.Count > 0)
+                {
+                    Application.Current.Windows[0].Page = new AppShell();
+                }
+            }
+            finally
+            {
+                BtnLogin.IsEnabled = true;
+                BtnLogin.Text = "Masuk ke Sistem PKL";
+            }
         }
 
         private async void OnForgotPasswordTapped(object? sender, EventArgs e)

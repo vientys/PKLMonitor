@@ -93,45 +93,8 @@ namespace Richikiwir.Services
             }
         }
 
-        public async Task<(bool Success, string Message, UserModel? User)> RegisterAsync(
-            string fullName, string identifier, string email, string password, 
-            UserRole role, string schoolName, string companyName, string major)
-        {
-            try
-            {
-                var baseUrl = await GetWorkingBaseUrlAsync();
-                var payload = new
-                {
-                    fullName,
-                    identifier,
-                    email,
-                    password,
-                    role = role.ToString(),
-                    schoolName,
-                    companyName,
-                    majorOrDepartment = major
-                };
-
-                var content = new StringContent(JsonSerializer.Serialize(payload, _jsonOptions), Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync($"{baseUrl}/api/auth/register", content);
-                var rawJson = await response.Content.ReadAsStringAsync();
-
-                var result = JsonSerializer.Deserialize<ApiResponseWrapper<UserModel>>(rawJson, _jsonOptions);
-                if (result != null && result.Success && result.Data != null)
-                {
-                    return (true, result.Message, result.Data);
-                }
-
-                return (false, result?.Message ?? "Gagal mendaftar ke server database.", null);
-            }
-            catch (Exception ex)
-            {
-                return (false, $"Tidak dapat terhubung ke server database (Pastikan API aktif di PC): {ex.Message}", null);
-            }
-        }
-
         public async Task<(bool Success, string Message, UserModel? User)> LoginAsync(
-            string identifier, string password, UserRole? preferredRole = null)
+            string identifier, string password, UserRole? preferredRole = null, string? jurusan = null)
         {
             try
             {
@@ -140,7 +103,8 @@ namespace Richikiwir.Services
                 {
                     identifier,
                     password,
-                    preferredRole = preferredRole?.ToString()
+                    preferredRole = preferredRole?.ToString(),
+                    jurusan
                 };
 
                 var content = new StringContent(JsonSerializer.Serialize(payload, _jsonOptions), Encoding.UTF8, "application/json");
