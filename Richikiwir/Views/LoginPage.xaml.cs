@@ -32,7 +32,6 @@ namespace Richikiwir.Views
             ResetButtonStyle(BtnRoleSiswa, "🎓 Siswa");
             ResetButtonStyle(BtnRoleIndustri, "🏢 Pembimbing Industri");
             ResetButtonStyle(BtnRoleSekolah, "🏫 Guru Sekolah");
-            ResetButtonStyle(BtnRoleMonitor, "📋 Tim Monitor");
             ResetButtonStyle(BtnRoleAdmin, "⚙️ Admin PKL");
 
             // Highlight selected button & update info
@@ -55,12 +54,6 @@ namespace Richikiwir.Views
                     LblRoleInfo.Text = "Masuk sebagai Guru Pembimbing: Pantau kehadiran siswa, verifikasi izin, & koordinasi mitra.";
                     LblIdentifier.Text = "NIP (Nomor Induk Pegawai Guru):";
                     TxtIdentifier.Placeholder = "Masukkan NIP Guru atau Email";
-                    break;
-                case UserRole.Monitor:
-                    SetSelectedButtonStyle(BtnRoleMonitor, "#D97706");
-                    LblRoleInfo.Text = "Masuk sebagai Tim Monitoring: Inspeksi lapangan ke industri, evaluasi fasilitas & kelayakan PKL.";
-                    LblIdentifier.Text = "NIP / ID Tim Monitoring:";
-                    TxtIdentifier.Placeholder = "Masukkan NIP Tim Monitoring atau Email";
                     break;
                 case UserRole.Admin:
                     SetSelectedButtonStyle(BtnRoleAdmin, "#DC2626");
@@ -117,11 +110,6 @@ namespace Richikiwir.Views
             {
                 Application.Current.Windows[0].Page = new AppShell();
             }
-        }
-
-        private async void OnRegisterTapped(object? sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new RegisterPage());
         }
 
         private async void OnForgotPasswordTapped(object? sender, EventArgs e)

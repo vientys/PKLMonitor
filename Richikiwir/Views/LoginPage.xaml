@@ -91,9 +91,6 @@
                             <Button x:Name="BtnRoleSekolah" Text="🏫 Guru Sekolah" FontSize="11" FontAttributes="Bold"
                                     HeightRequest="36" CornerRadius="18" Padding="12,0"
                                     Clicked="OnRoleSelectedClicked" CommandParameter="PembimbingSekolah" />
-                            <Button x:Name="BtnRoleMonitor" Text="📋 Tim Monitor" FontSize="11" FontAttributes="Bold"
-                                    HeightRequest="36" CornerRadius="18" Padding="12,0"
-                                    Clicked="OnRoleSelectedClicked" CommandParameter="Monitor" />
                             <Button x:Name="BtnRoleAdmin" Text="⚙️ Admin PKL" FontSize="11" FontAttributes="Bold"
                                     HeightRequest="36" CornerRadius="18" Padding="12,0"
                                     Clicked="OnRoleSelectedClicked" CommandParameter="Admin" />
@@ -175,20 +172,6 @@
                             HeightRequest="48" 
                             CornerRadius="12"
                             Clicked="OnLoginClicked" />
-
-                    <!-- Divider -->
-                    <BoxView HeightRequest="1" Color="{StaticResource BorderLight}" Margin="0,4" />
-
-                    <!-- Register Link -->
-                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
-                        <Label Text="Belum terdaftar di sistem?" FontSize="12" TextColor="{StaticResource Gray600}" />
-                        <Label Text="Daftar Akun PKL" FontSize="12" FontAttributes="Bold" 
-                               TextColor="{StaticResource PrimaryLight}" TextDecorations="Underline">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnRegisterTapped" />
-                            </Label.GestureRecognizers>
-                        </Label>
-                    </HorizontalStackLayout>
 
                 </VerticalStackLayout>
             </Border>

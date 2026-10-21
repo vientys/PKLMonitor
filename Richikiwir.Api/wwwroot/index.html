@@ -564,7 +564,7 @@
                     <h1 class="brand-title">SMKN 5 KAB. TANGERANG • Monitoring Presensi PKL</h1>
                     <div class="brand-subtitle">
                         <span class="server-status-pill"></span>
-                        <span>Database Fisik SQLite: <strong>pkl_database.db</strong> • Sinkron Realtime dengan Aplikasi Mobile</span>
+                        
                     </div>
                 </div>
             </div>
@@ -686,7 +686,7 @@
                     <div>
                         <div class="content-title">👥 Seluruh Akun Pengguna Tersimpan di Database</div>
                         <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
-                            Menampilkan seluruh akun untuk setiap role (Siswa, Pembimbing Industri, Guru Pembimbing, Monitor, Admin).
+                            Menampilkan seluruh akun untuk setiap role (Siswa, Pembimbing Industri, Guru Pembimbing, Admin).
                         </p>
                     </div>
                 </div>
@@ -697,7 +697,6 @@
                     <button class="role-chip" onclick="filterUsersRole('Siswa', this)">🎓 Siswa PKL</button>
                     <button class="role-chip" onclick="filterUsersRole('PembimbingIndustri', this)">🏢 Pembimbing Industri (DU/DI)</button>
                     <button class="role-chip" onclick="filterUsersRole('PembimbingSekolah', this)">🏫 Guru Pembimbing</button>
-                    <button class="role-chip" onclick="filterUsersRole('Monitor', this)">📊 Koordinator Monitor</button>
                     <button class="role-chip" onclick="filterUsersRole('Admin', this)">⚙️ Administrator</button>
                 </div>
 
@@ -787,7 +786,6 @@
 
                 <div style="background: #0F172A; color: #E2E8F0; padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6;">
                     <div style="color: #38BDF8; font-weight: 700; margin-bottom: 6px;">// Daftar Endpoint REST API Siap Digunakan Aplikasi Mobile:</div>
-                    <div>POST   /api/auth/register       -> Mendaftarkan akun (riwayat awal otomatis 0)</div>
                     <div>POST   /api/auth/login          -> Autentikasi akun &amp; role</div>
                     <div>POST   /api/attendance/check-in -> Simpan presensi masuk (dengan foto &amp; koordinat GPS)</div>
                     <div>POST   /api/attendance/check-out-> Simpan presensi pulang</div>

@@ -69,7 +69,7 @@ namespace Richikiwir.Services
 
             if (matchedUser == null)
             {
-                return (false, "Akun tidak terdaftar. Periksa kembali NISN/NIP atau silakan daftar akun baru terlebih dahulu.");
+                return (false, "Akun tidak terdaftar. Periksa kembali NISN/NIP atau hubungi administrator PKL.");
             }
 
             // Validasi peran jika dipilih
@@ -90,87 +90,6 @@ namespace Richikiwir.Services
             _currentUser = matchedUser;
             CurrentUserChanged?.Invoke(_currentUser);
             return (true, "Berhasil masuk.");
-        }
-
-        public async Task<(bool Success, string Message)> RegisterAsync(string fullName, string identifier, string email, string password, UserRole role, string schoolName, string companyName, string major)
-        {
-            if (string.IsNullOrWhiteSpace(fullName))
-            {
-                return (false, "Nama lengkap wajib diisi.");
-            }
-
-            if (string.IsNullOrWhiteSpace(identifier))
-            {
-                return (false, "Nomor identitas (NISN/NIP) wajib diisi.");
-            }
-
-            if (string.IsNullOrWhiteSpace(password) || password.Length < 4)
-            {
-                return (false, "Kata sandi minimal 4 karakter.");
-            }
-
-            var trimmedId = identifier.Trim();
-
-            // 1. Simpan ke database pusat melalui Web API
-            var apiResult = await ApiService.Current.RegisterAsync(fullName, trimmedId, email, password, role, schoolName, companyName, major);
-
-            // 2. Simpan ke cache lokal aplikasi
-            var newUser = apiResult.User ?? new UserModel
-            {
-                FullName = fullName,
-                Identifier = trimmedId,
-                Email = string.IsNullOrWhiteSpace(email) ? $"{trimmedId}@smkn1pkl.sch.id" : email.Trim(),
-                Password = password,
-                Role = role,
-                SchoolName = string.IsNullOrWhiteSpace(schoolName) ? "SMK Negeri 1 Rekayasa Teknologi" : schoolName.Trim(),
-                CompanyName = string.IsNullOrWhiteSpace(companyName) ? "PT Solusi Digital Nusantara" : companyName.Trim(),
-                MajorOrDepartment = string.IsNullOrWhiteSpace(major) ? "Kompetensi Keahlian" : major.Trim()
-            };
-
-            if (!_users.Any(u => NormalizeAndCompare(u.Identifier, trimmedId)))
-            {
-                _users.Add(newUser);
-            }
-
-            if (role == UserRole.Siswa)
-            {
-                if (!DataService.Current.Students.Any(s => NormalizeAndCompare(s.Nisn, trimmedId)))
-                {
-                    DataService.Current.Students.Add(new StudentInternSummary
-                    {
-                        StudentId = newUser.Id,
-                        FullName = newUser.FullName,
-                        Nisn = newUser.Identifier,
-                        CompanyName = newUser.CompanyName,
-                        IndustryMentorName = "-",
-                        SchoolMentorName = "-",
-                        Major = newUser.MajorOrDepartment,
-                        AttendancePercentage = 0.0,
-                        TodayAttendanceStatus = "Belum Presensi",
-                        TodayCheckInTime = "-",
-                        CompletedLogbooks = 0,
-                        TotalLogbooksExpected = 40,
-                        MonitoringStatus = "Siswa Baru"
-                    });
-                }
-            }
-
-            _currentUser = newUser;
-            CurrentUserChanged?.Invoke(_currentUser);
-
-            if (apiResult.Success)
-            {
-                return (true, "Registrasi akun berhasil dan tersimpan permanen di Database!");
-            }
-            else
-            {
-                return (true, $"Akun tersimpan di HP. Catatan sinkronisasi database: {apiResult.Message}");
-            }
-        }
-
-        public (bool Success, string Message) Register(string fullName, string identifier, string email, string password, UserRole role, string schoolName, string companyName, string major)
-        {
-            return Task.Run(() => RegisterAsync(fullName, identifier, email, password, role, schoolName, companyName, major)).GetAwaiter().GetResult();
         }
 
         public void Logout()

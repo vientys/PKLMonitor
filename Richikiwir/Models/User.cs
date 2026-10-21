@@ -4,11 +4,10 @@ namespace Richikiwir.Models
 {
     public enum UserRole
     {
-        Siswa,
-        PembimbingIndustri,
-        PembimbingSekolah,
-        Monitor,
-        Admin
+        Siswa = 0,
+        PembimbingIndustri = 1,
+        PembimbingSekolah = 2,
+        Admin = 4
     }
 
     public class UserModel
@@ -23,7 +22,6 @@ namespace Richikiwir.Models
             UserRole.Siswa => "Siswa PKL",
             UserRole.PembimbingIndustri => "Pembimbing Industri (DU/DI)",
             UserRole.PembimbingSekolah => "Pembimbing Sekolah (Guru)",
-            UserRole.Monitor => "Tim Monitoring",
             UserRole.Admin => "Administrator PKL",
             _ => "Pengguna"
         };
@@ -48,7 +46,6 @@ namespace Richikiwir.Models
             UserRole.Siswa => "#2563EB",            // Blue
             UserRole.PembimbingIndustri => "#059669",// Emerald
             UserRole.PembimbingSekolah => "#7C3AED", // Purple
-            UserRole.Monitor => "#D97706",          // Amber
             UserRole.Admin => "#DC2626",            // Crimson
             _ => "#4B5563"
         };

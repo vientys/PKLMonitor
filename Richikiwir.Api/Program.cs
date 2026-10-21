@@ -67,7 +67,7 @@ app.MapPost("/api/auth/login", async (AppDbContext db, [FromBody] LoginRequest r
 
     if (user == null)
     {
-        return Results.NotFound(ApiResponse<UserModel>.Fail("Akun tidak ditemukan. Periksa NISN/NIP atau silakan daftar akun baru."));
+        return Results.NotFound(ApiResponse<UserModel>.Fail("Akun tidak ditemukan. Periksa NISN/NIP atau hubungi administrator."));
     }
 
     if (req.PreferredRole.HasValue && user.Role != req.PreferredRole.Value)
@@ -96,87 +96,6 @@ app.MapPost("/api/auth/login", async (AppDbContext db, [FromBody] LoginRequest r
     };
 
     return Results.Ok(ApiResponse<UserModel>.Ok(safeUser, $"Selamat datang kembali, {user.FullName}!"));
-});
-
-// POST /api/auth/register (Persisted to Database, Starts with ZERO History)
-app.MapPost("/api/auth/register", async (AppDbContext db, [FromBody] RegisterRequest req) =>
-{
-    if (string.IsNullOrWhiteSpace(req.FullName) || string.IsNullOrWhiteSpace(req.Identifier))
-    {
-        return Results.BadRequest(ApiResponse<UserModel>.Fail("Nama lengkap dan Nomor Identitas (NISN/NIP) wajib diisi."));
-    }
-
-    if (string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 4)
-    {
-        return Results.BadRequest(ApiResponse<UserModel>.Fail("Kata sandi minimal 4 karakter."));
-    }
-
-    var clean = CleanId(req.Identifier);
-    var users = await db.Users.ToListAsync();
-    var exists = users.Any(u => CleanId(u.Identifier) == clean || 
-        (!string.IsNullOrWhiteSpace(req.Email) && string.Equals(u.Email.Trim(), req.Email.Trim(), StringComparison.OrdinalIgnoreCase)));
-
-    if (exists)
-    {
-        return Results.Conflict(ApiResponse<UserModel>.Fail("Nomor identitas atau email sudah terdaftar. Silakan login."));
-    }
-
-    var newUser = new UserModel
-    {
-        Id = "usr-" + Guid.NewGuid().ToString("N")[..8],
-        FullName = req.FullName.Trim(),
-        Identifier = req.Identifier.Trim(),
-        Email = string.IsNullOrWhiteSpace(req.Email) ? $"{req.Identifier.Trim()}@smkn1pkl.sch.id" : req.Email.Trim(),
-        Password = req.Password,
-        Role = req.Role,
-        SchoolName = string.IsNullOrWhiteSpace(req.SchoolName) ? "SMK Negeri 1 Rekayasa Teknologi" : req.SchoolName.Trim(),
-        CompanyName = string.IsNullOrWhiteSpace(req.CompanyName) ? "PT Solusi Digital Nusantara" : req.CompanyName.Trim(),
-        MajorOrDepartment = string.IsNullOrWhiteSpace(req.MajorOrDepartment) ? "Kompetensi Keahlian" : req.MajorOrDepartment.Trim(),
-        PhoneNumber = req.PhoneNumber?.Trim() ?? string.Empty,
-        CreatedAt = DateTime.UtcNow
-    };
-
-    await db.Users.AddAsync(newUser);
-
-    if (req.Role == UserRole.Siswa)
-    {
-        var newStudentSummary = new StudentInternSummary
-        {
-            StudentId = newUser.Id,
-            FullName = newUser.FullName,
-            Nisn = newUser.Identifier,
-            CompanyName = newUser.CompanyName,
-            IndustryMentorName = "-",
-            SchoolMentorName = "-",
-            Major = newUser.MajorOrDepartment,
-            AttendancePercentage = 0.0,
-            TodayAttendanceStatus = "Belum Presensi",
-            TodayCheckInTime = "-",
-            CompletedLogbooks = 0,
-            TotalLogbooksExpected = 40,
-            MonitoringStatus = "Siswa Baru"
-        };
-        await db.Students.AddAsync(newStudentSummary);
-    }
-
-    // Save changes permanently to SQLite database
-    await db.SaveChangesAsync();
-
-    var safeUser = new UserModel
-    {
-        Id = newUser.Id,
-        FullName = newUser.FullName,
-        Identifier = newUser.Identifier,
-        Email = newUser.Email,
-        Role = newUser.Role,
-        SchoolName = newUser.SchoolName,
-        CompanyName = newUser.CompanyName,
-        MajorOrDepartment = newUser.MajorOrDepartment,
-        PhoneNumber = newUser.PhoneNumber,
-        CreatedAt = newUser.CreatedAt
-    };
-
-    return Results.Created($"/api/users/{newUser.Id}", ApiResponse<UserModel>.Ok(safeUser, "Registrasi berhasil disimpan ke database. Akun baru siap digunakan dengan riwayat 0."));
 });
 
 // GET /api/users
@@ -235,7 +154,6 @@ app.MapGet("/api/monitoring/summary", async (AppDbContext db) =>
         roleSiswa = users.Count(u => u.Role == UserRole.Siswa),
         roleIndustri = users.Count(u => u.Role == UserRole.PembimbingIndustri),
         roleSekolah = users.Count(u => u.Role == UserRole.PembimbingSekolah),
-        roleMonitor = users.Count(u => u.Role == UserRole.Monitor),
         roleAdmin = users.Count(u => u.Role == UserRole.Admin),
         totalAttendances = attendances.Count,
         todayTotal = todayAtt.Count,

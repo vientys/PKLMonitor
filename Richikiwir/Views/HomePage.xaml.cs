@@ -49,7 +49,6 @@ namespace Richikiwir.Views
             LayoutSiswaView.IsVisible = false;
             LayoutIndustriView.IsVisible = false;
             LayoutSekolahView.IsVisible = false;
-            LayoutMonitorView.IsVisible = false;
             LayoutAdminView.IsVisible = false;
 
             switch (user.Role)
@@ -63,9 +62,6 @@ namespace Richikiwir.Views
                     break;
                 case UserRole.PembimbingSekolah:
                     LayoutSekolahView.IsVisible = true;
-                    break;
-                case UserRole.Monitor:
-                    LayoutMonitorView.IsVisible = true;
                     break;
                 case UserRole.Admin:
                     LayoutAdminView.IsVisible = true;
@@ -183,26 +179,6 @@ namespace Richikiwir.Views
                 {
                     await DisplayAlertAsync("Nilai Tersimpan", $"Nilai {scoreStr} untuk {studentName} telah dicatat dalam kartu evaluasi DU/DI.", "Selesai");
                 }
-            }
-        }
-
-        private async void OnNewMonitoringVisitClicked(object? sender, EventArgs e)
-        {
-            var company = await DisplayPromptAsync("Laporan Monitoring DU/DI", "Nama Perusahaan Mitra yang Dikunjungi:", "Lanjut", "Batal", "PT Astra International Tbk");
-            if (!string.IsNullOrWhiteSpace(company))
-            {
-                var notes = await DisplayPromptAsync("Hasil Evaluasi", "Catatan kepuasan industri & kondisi siswa:", "Simpan", "Batal", "Siswa memiliki etos kerja baik.");
-                DataService.Current.MonitoringVisits.Insert(0, new MonitoringVisit
-                {
-                    CompanyName = company,
-                    MonitorName = AuthService.Current.CurrentUser.FullName,
-                    VisitDate = DateTime.Today,
-                    IndustryFeedback = notes ?? "Evaluasi monitoring terlaksana.",
-                    Status = "Selesai Dikunjungi",
-                    GeneralRating = 5.0
-                });
-
-                await DisplayAlertAsync("Berhasil", "Laporan kunjungan monitoring industri berhasil ditambahkan ke rekap sekolah.", "OK");
             }
         }
 

@@ -8,7 +8,6 @@ namespace Richikiwir.Api.Models
         Siswa = 0,
         PembimbingIndustri = 1,
         PembimbingSekolah = 2,
-        Monitor = 3,
         Admin = 4
     }
 
@@ -46,7 +45,6 @@ namespace Richikiwir.Api.Models
             UserRole.Siswa => "Siswa PKL",
             UserRole.PembimbingIndustri => "Pembimbing Industri (DU/DI)",
             UserRole.PembimbingSekolah => "Guru Pembimbing Sekolah",
-            UserRole.Monitor => "Koordinator Lapangan & BKK",
             UserRole.Admin => "Administrator PKL",
             _ => "Pengguna"
         };
@@ -113,19 +111,6 @@ namespace Richikiwir.Api.Models
         public string Identifier { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public UserRole? PreferredRole { get; set; }
-    }
-
-    public class RegisterRequest
-    {
-        public string FullName { get; set; } = string.Empty;
-        public string Identifier { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public UserRole Role { get; set; } = UserRole.Siswa;
-        public string SchoolName { get; set; } = "SMK Negeri 1 Rekayasa Teknologi";
-        public string CompanyName { get; set; } = "PT Solusi Digital Nusantara";
-        public string MajorOrDepartment { get; set; } = "XII Rekayasa Perangkat Lunak 1";
-        public string PhoneNumber { get; set; } = string.Empty;
     }
 
     public class AttendanceCheckInRequest

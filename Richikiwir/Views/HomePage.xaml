@@ -233,40 +233,7 @@
             </VerticalStackLayout>
 
             <!-- ======================================================== -->
-            <!-- VIEW 4: ROLE MONITOR (Koordinator Lapangan & BKK)         -->
-            <!-- ======================================================== -->
-            <VerticalStackLayout x:Name="LayoutMonitorView" Spacing="16" IsVisible="False">
-                <Border StrokeShape="RoundRectangle 16" BackgroundColor="#FFFBEB" Stroke="#FDE68A" Padding="16">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="Inspeksi Kunjungan DU/DI Mitra" FontSize="14" FontAttributes="Bold" TextColor="#92400E" />
-                        <Label Text="Jadwal verifikasi fasilitas dan konfirmasi kepuasan industri terhadap kinerja siswa." FontSize="11" TextColor="#78350F" />
-                        
-                        <Button Text="+ Buat Laporan Monitoring Baru" FontSize="12" FontAttributes="Bold" 
-                                BackgroundColor="#D97706" TextColor="White" HeightRequest="38" CornerRadius="8"
-                                Clicked="OnNewMonitoringVisitClicked" />
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- Riwayat Kunjungan Monitoring -->
-                <Border StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" BackgroundColor="White" Padding="16">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="Riwayat Kunjungan Lapangan Terakhir" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
-                        <Border StrokeShape="RoundRectangle 10" BackgroundColor="#F8FAFC" Stroke="{StaticResource BorderLight}" Padding="12">
-                            <VerticalStackLayout Spacing="4">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="PT Solusi Digital Nusantara" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Gray900}" />
-                                    <Label Grid.Column="1" Text="Rating: 4.9 ★" FontSize="11" FontAttributes="Bold" TextColor="#D97706" />
-                                </Grid>
-                                <Label Text="Kunjungan tanggal 12 Okt 2026 • 2 Siswa Magang" FontSize="11" TextColor="{StaticResource Gray500}" />
-                                <Label Text="Hasil: Lingkungan kerja sangat kondusif, mentor aktif membimbing framework web &amp; mobile." FontSize="11" TextColor="{StaticResource Gray700}" />
-                            </VerticalStackLayout>
-                        </Border>
-                    </VerticalStackLayout>
-                </Border>
-            </VerticalStackLayout>
-
-            <!-- ======================================================== -->
-            <!-- VIEW 5: ROLE ADMIN (Administrator PKL Sekolah)           -->
+            <!-- VIEW 4: ROLE ADMIN (Administrator PKL Sekolah)           -->
             <!-- ======================================================== -->
             <VerticalStackLayout x:Name="LayoutAdminView" Spacing="16" IsVisible="False">
                 <!-- Statistik Makro PKL -->
