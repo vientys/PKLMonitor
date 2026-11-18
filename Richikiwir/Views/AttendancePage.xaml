@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Richikiwir.Views"
              x:Class="Richikiwir.Views.AttendancePage"
              BackgroundColor="{StaticResource AppBackground}"
              Title="Presensi Realtime PKL">
@@ -27,7 +28,7 @@
                     <BoxView HeightRequest="1" Color="#3B82F6" Opacity="0.5" Margin="0,4" />
 
                     <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                        <Label Text="🏢" FontSize="13" VerticalOptions="Center" />
+                        <controls:MaterialIcon Icon="business" IconSize="13" IconColor="#E2E8F0" />
                         <Label x:Name="LblCompanyName" Text="PT Solusi Digital Nusantara (Cyber 2 Tower)" 
                                FontSize="12" TextColor="#E2E8F0" FontAttributes="Bold" />
                     </HorizontalStackLayout>
@@ -37,7 +38,7 @@
             <!-- Pilihan Tipe Absensi -->
             <VerticalStackLayout Spacing="6">
                 <Label Text="Tipe Presensi Hari Ini:" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Gray800}" />
-                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
+                <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="5">
                     <Button x:Name="BtnTypeMasuk" Text="Masuk" FontSize="11" FontAttributes="Bold" HeightRequest="38" CornerRadius="10"
                             Clicked="OnAttendanceTypeClicked" CommandParameter="Masuk" />
                     <Button x:Name="BtnTypePulang" Text="Pulang" FontSize="11" FontAttributes="Bold" HeightRequest="38" CornerRadius="10"
@@ -46,11 +47,13 @@
                             Grid.Column="2" Clicked="OnAttendanceTypeClicked" CommandParameter="Izin" />
                     <Button x:Name="BtnTypeSakit" Text="Sakit" FontSize="11" FontAttributes="Bold" HeightRequest="38" CornerRadius="10"
                             Grid.Column="3" Clicked="OnAttendanceTypeClicked" CommandParameter="Sakit" />
+                    <Button x:Name="BtnTypeAlpa" Text="Alpa" FontSize="11" FontAttributes="Bold" HeightRequest="38" CornerRadius="10"
+                        Grid.Column="4" Clicked="OnAttendanceTypeClicked" CommandParameter="Alpa" />
                 </Grid>
             </VerticalStackLayout>
 
             <!-- Card 1: Lokasi Realtime & Geofence GPS -->
-            <Border StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
+            <Border x:Name="LayoutLocationCard" StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
                     BackgroundColor="White" Padding="16">
                 <Border.Shadow>
                     <Shadow Brush="#94A3B8" Offset="0,4" Radius="8" Opacity="0.1" />
@@ -58,7 +61,7 @@
                 <VerticalStackLayout Spacing="10">
                     <Grid ColumnDefinitions="*,Auto">
                         <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                            <Label Text="📍" FontSize="16" VerticalOptions="Center" />
+                            <controls:MaterialIcon Icon="location_on" IconSize="18" IconColor="{StaticResource PrimaryDark}" />
                             <Label Text="Lokasi Realtime (GPS)" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" VerticalOptions="Center" />
                         </HorizontalStackLayout>
 
@@ -87,9 +90,9 @@
                     <!-- Geofencing Radius Verification Indicator -->
                     <Border x:Name="BrdGeofence" StrokeShape="RoundRectangle 12" BackgroundColor="#F0FDF4" Stroke="#BBF7D0" StrokeThickness="1" Padding="12">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                            <Label Text="🎯" FontSize="20" VerticalOptions="Center" />
+                            <controls:MaterialIcon x:Name="LblGeofenceIcon" Icon="gps_fixed" IconSize="22" IconColor="#166534" />
                             <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                <Label x:Name="LblGeofenceStatus" Text="✓ Dalam Radius Lokasi PKL (Valid)" 
+                                <Label x:Name="LblGeofenceStatus" Text="Dalam Radius Lokasi PKL (Valid)"
                                        FontSize="12" FontAttributes="Bold" TextColor="#166534" />
                                 <Label x:Name="LblGeofenceDetail" Text="Jarak dari kantor mitra: 24.5 meter (Toleransi batas max: 100 meter)" 
                                        FontSize="11" TextColor="#15803D" />
@@ -97,17 +100,11 @@
                         </Grid>
                     </Border>
 
-                    <!-- Tombol Refresh GPS -->
-                    <Button Text="🔄 Perbarui Koordinat GPS Sekarang" 
-                            FontSize="12" FontAttributes="Bold" 
-                            BackgroundColor="#F1F5F9" TextColor="{StaticResource Primary}" 
-                            HeightRequest="36" CornerRadius="8"
-                            Clicked="OnRefreshGpsClicked" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- Card 2: Foto Selfie Kehadiran Realtime -->
-            <Border StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
+            <Border x:Name="LayoutPhotoCard" StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
                     BackgroundColor="White" Padding="16">
                 <Border.Shadow>
                     <Shadow Brush="#94A3B8" Offset="0,4" Radius="8" Opacity="0.1" />
@@ -115,7 +112,7 @@
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="*,Auto">
                         <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                            <Label Text="📸" FontSize="16" VerticalOptions="Center" />
+                            <controls:MaterialIcon Icon="photo_camera" IconSize="18" IconColor="{StaticResource PrimaryDark}" />
                             <Label Text="Foto Selfie / Bukti Lapangan" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" VerticalOptions="Center" />
                         </HorizontalStackLayout>
                         <Label x:Name="LblPhotoStatus" Text="Wajib Foto" FontSize="11" TextColor="{StaticResource Warning}" FontAttributes="Bold" VerticalOptions="Center" />
@@ -127,7 +124,7 @@
                         <Grid>
                             <!-- Placeholder Bila Belum Ambil Foto -->
                             <VerticalStackLayout x:Name="LayoutPhotoPlaceholder" VerticalOptions="Center" HorizontalOptions="Center" Spacing="6">
-                                <Label Text="📷" FontSize="42" HorizontalOptions="Center" TextColor="{StaticResource Gray400}" />
+                                <controls:MaterialIcon Icon="photo_camera" IconSize="42" IconColor="{StaticResource Gray400}" HorizontalOptions="Center" />
                                 <Label Text="Belum ada foto kehadiran" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray600}" HorizontalOptions="Center" />
                                 <Label Text="Ambil selfie langsung di lokasi PKL" FontSize="11" TextColor="{StaticResource Gray400}" HorizontalOptions="Center" />
                             </VerticalStackLayout>
@@ -148,21 +145,21 @@
                         </Grid>
                     </Border>
 
-                    <!-- Action Buttons Kamera & Galeri -->
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                        <Button Text="📷 Ambil Foto Selfie" 
+                        <!-- Action Button Kamera -->
+                        <VerticalStackLayout Spacing="6">
+                        <Button x:Name="BtnCapturePhoto" Text="Ambil Foto Selfie" 
                                 FontSize="12" FontAttributes="Bold" 
                                 BackgroundColor="{StaticResource PrimaryLight}" TextColor="White" 
                                 HeightRequest="42" CornerRadius="10"
-                                Clicked="OnCapturePhotoClicked" />
-
-                        <Button Text="🖼️ Dari Galeri" 
-                                FontSize="12" FontAttributes="Bold" 
-                                BackgroundColor="#F1F5F9" TextColor="{StaticResource Gray700}" 
-                                HeightRequest="42" CornerRadius="10"
-                                Grid.Column="1"
-                                Clicked="OnPickPhotoClicked" />
-                    </Grid>
+                                Clicked="OnCapturePhotoClicked">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="MaterialSymbols" Glyph="photo_camera" Size="18" Color="White" />
+                            </Button.ImageSource>
+                        </Button>
+                        <Label x:Name="LblPhotoRestriction" IsVisible="True"
+                               Text="Memeriksa jarak dari kantor..." FontSize="11"
+                               TextColor="{StaticResource Gray600}" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
                 </VerticalStackLayout>
             </Border>
 
@@ -173,7 +170,7 @@
                     <Shadow Brush="#94A3B8" Offset="0,4" Radius="8" Opacity="0.1" />
                 </Border.Shadow>
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Catatan Aktivitas / Alasan (Opsional):" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray800}" />
+                    <Label x:Name="LblNotesTitle" Text="Catatan Aktivitas (Opsional):" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray800}" />
                     <Border StrokeShape="RoundRectangle 10" Stroke="{StaticResource Gray300}" StrokeThickness="1" BackgroundColor="#F8FAFC" Padding="10">
                         <Editor x:Name="TxtNotes" Placeholder="Contoh: Datang tepat waktu untuk standup meeting &amp; implementasi modul autentikasi..." 
                                 HeightRequest="70" AutoSize="Disabled" FontSize="12" TextColor="{StaticResource Gray900}" />
@@ -183,7 +180,7 @@
 
             <!-- Tombol Submit Presensi -->
             <Button x:Name="BtnSubmitAttendance" 
-                    Text="✓ Kirim Presensi Terverifikasi Realtime" 
+                    Text="Kirim Presensi Terverifikasi Realtime"
                     FontAttributes="Bold" FontSize="14" 
                     BackgroundColor="{StaticResource Success}" TextColor="White" 
                     HeightRequest="50" CornerRadius="12"

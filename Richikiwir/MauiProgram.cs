@@ -11,8 +11,8 @@ namespace Richikiwir
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("InterVariable.ttf", "Inter");
+                    fonts.AddFont("MaterialSymbolsOutlined.ttf", "MaterialSymbols");
                 });
 
 #if DEBUG

@@ -54,7 +54,6 @@ namespace Richikiwir.Services
                 if (apiRes.Success && apiRes.User != null)
                 {
                     _currentUser = apiRes.User;
-                    _currentUser.Password = password;
                     CurrentUserChanged?.Invoke(_currentUser);
                     return (true, apiRes.Message);
                 }
@@ -80,6 +79,12 @@ namespace Richikiwir.Services
                 return (false, "Akun tidak ditemukan. Periksa kembali NIS/NIP Anda atau hubungi Koordinator PKL.");
             }
 
+            if (matchedUser == null)
+            {
+                return (false, "Akun tidak terdaftar. Periksa kembali NISN/NIP atau hubungi administrator PKL.");
+            }
+
+            // Validasi peran jika dipilih
             if (preferredRole.HasValue && matchedUser.Role != preferredRole.Value)
             {
                 return (false, $"Identitas terdaftar sebagai '{matchedUser.RoleDisplayName}', bukan '{preferredRole.Value}'. Akses ditolak.");
@@ -94,6 +99,27 @@ namespace Richikiwir.Services
             _currentUser = matchedUser;
             CurrentUserChanged?.Invoke(_currentUser);
             return (true, "Berhasil masuk secara offline.");
+        }
+
+        public async Task<(bool Success, string Message)> CompleteFirstLoginAsync(
+            string fullName, string email, string phoneNumber, string newPassword)
+        {
+            if (_currentUser == null)
+                return (false, "Sesi login tidak ditemukan. Silakan masuk kembali.");
+
+            if (string.IsNullOrWhiteSpace(_currentUser.AccessToken))
+                return (false, "Setup profil awal membutuhkan koneksi ke server. Hubungkan aplikasi lalu masuk kembali.");
+
+            var result = await ApiService.Current.CompleteFirstLoginAsync(fullName, email, phoneNumber, newPassword);
+            if (!result.Success) return result;
+
+            _currentUser.FullName = fullName.Trim();
+            _currentUser.Email = email.Trim();
+            _currentUser.PhoneNumber = phoneNumber.Trim();
+            _currentUser.MustCompleteProfile = false;
+            _currentUser.MustChangePassword = false;
+            CurrentUserChanged?.Invoke(_currentUser);
+            return result;
         }
 
         public (bool Success, string Message) Login(string identifier, string password, UserRole? preferredRole = null, string? jurusan = null)

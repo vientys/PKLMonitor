@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:Richikiwir.Models"
+             xmlns:controls="clr-namespace:Richikiwir.Views"
              x:Class="Richikiwir.Views.HomePage"
              BackgroundColor="{StaticResource AppBackground}"
              Title="Home">
@@ -85,11 +86,15 @@
                         </Grid>
 
                         <!-- Tombol Buka Halaman Presensi GPS & Foto -->
-                        <Button Text="📍 Presensi Sekarang (Lokasi Realtime &amp; Foto)" 
+                        <Button Text="Presensi Sekarang (Lokasi Realtime &amp; Foto)" 
                                 FontAttributes="Bold" FontSize="13" 
                                 BackgroundColor="{StaticResource Primary}" TextColor="White" 
                                 HeightRequest="46" CornerRadius="12"
-                                Clicked="OnOpenAttendancePageClicked" />
+                                Clicked="OnOpenAttendancePageClicked">
+                            <Button.ImageSource>
+                                <FontImageSource FontFamily="MaterialSymbols" Glyph="location_on" Size="18" Color="White" />
+                            </Button.ImageSource>
+                        </Button>
                     </VerticalStackLayout>
                 </Border>
 
@@ -97,7 +102,7 @@
                 <!-- Jurnal Harian Quick Card -->
                 <Border StrokeShape="RoundRectangle 16" BackgroundColor="#F0FDF4" Stroke="#BBF7D0" Padding="14">
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalOptions="Center">
-                        <Label Text="📖" FontSize="26" VerticalOptions="Center" />
+                        <controls:MaterialIcon Icon="menu_book" IconSize="28" IconColor="#166534" />
                         <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
                             <Label Text="Jurnal Harian PKL (Logbook)" FontSize="13" FontAttributes="Bold" TextColor="#166534" />
                             <Label Text="Catat aktivitas dan kompetensi yang dipelajari hari ini." FontSize="11" TextColor="#15803D" />
@@ -117,7 +122,7 @@
                     <VerticalStackLayout Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
                             <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                <Label Text="⚠️" FontSize="16" VerticalOptions="Center" />
+                                <controls:MaterialIcon Icon="warning" IconSize="18" IconColor="#92400E" />
                                 <Label Text="Verifikasi Presensi Realtime" FontSize="13" FontAttributes="Bold" TextColor="#92400E" VerticalOptions="Center" />
                             </HorizontalStackLayout>
                             <Border Grid.Column="1" StrokeShape="RoundRectangle 10" BackgroundColor="#D97706" Padding="6,2">
@@ -128,9 +133,13 @@
                                FontSize="11" TextColor="#78350F" />
                         
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Button Text="✓ Setujui Presensi" FontSize="11" FontAttributes="Bold" 
+                            <Button Text="Setujui Presensi" FontSize="11" FontAttributes="Bold" 
                                     BackgroundColor="{StaticResource Success}" TextColor="White" HeightRequest="36" CornerRadius="8"
-                                    Clicked="OnApproveAttendanceClicked" />
+                                    Clicked="OnApproveAttendanceClicked">
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="MaterialSymbols" Glyph="check_circle" Size="16" Color="White" />
+                                </Button.ImageSource>
+                            </Button>
                             <Button Grid.Column="1" Text="Tinjau Lokasi &amp; Foto" FontSize="11" FontAttributes="Bold" 
                                     BackgroundColor="#F1F5F9" TextColor="{StaticResource Gray800}" HeightRequest="36" CornerRadius="8"
                                     Clicked="OnReviewAttendanceDetailsClicked" />
@@ -156,7 +165,10 @@
                                 <VerticalStackLayout Grid.Column="1" Spacing="2">
                                     <Label Text="Rizky Ramadhan" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource Gray900}" />
                                     <Label Text="XII RPL 1 • Hadir (07:42 WIB)" FontSize="11" TextColor="{StaticResource Success}" />
-                                    <Label Text="Jurnal Hari Ini: Terkirim ✓" FontSize="10" TextColor="{StaticResource Gray500}" />
+                                    <HorizontalStackLayout Spacing="4">
+                                        <controls:MaterialIcon Icon="task_alt" IconSize="12" IconColor="{StaticResource Success}" />
+                                        <Label Text="Jurnal Hari Ini: Terkirim" FontSize="10" TextColor="{StaticResource Gray500}" />
+                                    </HorizontalStackLayout>
                                 </VerticalStackLayout>
                                 <Button Grid.Column="2" Text="Nilai" FontSize="11" FontAttributes="Bold" BackgroundColor="{StaticResource PrimaryLight}" TextColor="White" 
                                         HeightRequest="30" Padding="10,0" CornerRadius="6" Clicked="OnGradeStudentClicked" CommandParameter="Rizky Ramadhan" />
@@ -272,12 +284,20 @@
 
                 <!-- Tombol Tindakan Admin Cepat -->
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Button Text="📊 Export Rekap (Excel)" FontSize="12" FontAttributes="Bold" 
+                    <Button Text="Export Rekap (Excel)" FontSize="12" FontAttributes="Bold" 
                             BackgroundColor="{StaticResource PrimaryLight}" TextColor="White" HeightRequest="44" CornerRadius="10"
-                            Clicked="OnExportDataClicked" />
-                    <Button Grid.Column="1" Text="📢 Broadcast Pengumuman" FontSize="12" FontAttributes="Bold" 
+                            Clicked="OnExportDataClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="MaterialSymbols" Glyph="download" Size="16" Color="White" />
+                        </Button.ImageSource>
+                    </Button>
+                    <Button Grid.Column="1" Text="Broadcast Pengumuman" FontSize="12" FontAttributes="Bold" 
                             BackgroundColor="{StaticResource PrimaryDark}" TextColor="White" HeightRequest="44" CornerRadius="10"
-                            Clicked="OnBroadcastClicked" />
+                            Clicked="OnBroadcastClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="MaterialSymbols" Glyph="campaign" Size="16" Color="White" />
+                        </Button.ImageSource>
+                    </Button>
                 </Grid>
             </VerticalStackLayout>
 

@@ -43,6 +43,13 @@ namespace Richikiwir.Views
             LblProfileCompany.Text = user.CompanyName;
             LblProfileMajor.Text = user.MajorOrDepartment;
             LblProfileEmail.Text = user.Email;
+            BtnManageAccounts.IsVisible = user.Role == UserRole.Admin;
+        }
+
+        private async void OnManageAccountsClicked(object? sender, EventArgs e)
+        {
+            if (AuthService.Current.CurrentUser.Role != UserRole.Admin) return;
+            await Shell.Current.GoToAsync(nameof(AccountManagementPage));
         }
 
         private async void OnDownloadSopClicked(object? sender, EventArgs e)

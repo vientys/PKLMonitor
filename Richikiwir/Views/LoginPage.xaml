@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:Richikiwir.Models"
+             xmlns:controls="clr-namespace:Richikiwir.Views"
              x:Class="Richikiwir.Views.LoginPage"
              BackgroundColor="{StaticResource AppBackground}"
              NavigationPage.HasNavigationBar="False">
@@ -82,16 +83,16 @@
                     
                     <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
                         <HorizontalStackLayout Spacing="8">
-                            <Button x:Name="BtnRoleSiswa" Text="🎓 Siswa" FontSize="11" FontAttributes="Bold"
+                                <Button x:Name="BtnRoleSiswa" Text="Siswa" FontSize="11" FontAttributes="Bold"
                                     HeightRequest="36" CornerRadius="18" Padding="12,0"
                                     Clicked="OnRoleSelectedClicked" CommandParameter="Siswa" />
-                            <Button x:Name="BtnRoleIndustri" Text="🏢 Pembimbing Industri" FontSize="11" FontAttributes="Bold"
+                                <Button x:Name="BtnRoleIndustri" Text="Pembimbing Industri" FontSize="11" FontAttributes="Bold"
                                     HeightRequest="36" CornerRadius="18" Padding="12,0"
                                     Clicked="OnRoleSelectedClicked" CommandParameter="PembimbingIndustri" />
-                            <Button x:Name="BtnRoleSekolah" Text="🏫 Guru Sekolah" FontSize="11" FontAttributes="Bold"
+                                <Button x:Name="BtnRoleSekolah" Text="Guru Sekolah" FontSize="11" FontAttributes="Bold"
                                     HeightRequest="36" CornerRadius="18" Padding="12,0"
                                     Clicked="OnRoleSelectedClicked" CommandParameter="PembimbingSekolah" />
-                            <Button x:Name="BtnRoleAdmin" Text="⚙️ Admin PKL" FontSize="11" FontAttributes="Bold"
+                                <Button x:Name="BtnRoleAdmin" Text="Admin PKL" FontSize="11" FontAttributes="Bold"
                                     HeightRequest="36" CornerRadius="18" Padding="12,0"
                                     Clicked="OnRoleSelectedClicked" CommandParameter="Admin" />
                         </HorizontalStackLayout>
@@ -100,7 +101,7 @@
                     <!-- Role Description Pill -->
                     <Border StrokeShape="RoundRectangle 10" BackgroundColor="#EFF6FF" Stroke="#BFDBFE" Padding="12,8">
                         <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                            <Label Text="ℹ️" FontSize="14" VerticalOptions="Center" />
+                            <controls:MaterialIcon Icon="info" IconSize="16" IconColor="#1E40AF" />
                             <Label x:Name="LblRoleInfo" 
                                    Text="Masuk sebagai Siswa PKL: Mengakses absensi live GPS, selfie kehadiran, &amp; jurnal harian." 
                                    FontSize="11" 
@@ -114,7 +115,7 @@
                         <Label Text="Pilih Direktori Jurusan Anda:" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray700}" />
                         <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource Gray300}" StrokeThickness="1" BackgroundColor="#F8FAFC" Padding="12,0">
                             <Grid ColumnDefinitions="30,*">
-                                <Label Text="📁" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                                <controls:MaterialIcon Icon="folder_open" IconSize="17" IconColor="{StaticResource Gray600}" />
                                 <Picker x:Name="PickerJurusan" Grid.Column="1" FontSize="12" TextColor="{StaticResource Gray900}" Title="Pilih Jurusan Anda">
                                     <Picker.ItemsSource>
                                         <x:Array Type="{x:Type x:String}">
@@ -141,7 +142,7 @@
                                FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray700}" />
                         <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource Gray300}" StrokeThickness="1" BackgroundColor="#F8FAFC" Padding="12,4">
                             <Grid ColumnDefinitions="30,*">
-                                <Label Text="🆔" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                                <controls:MaterialIcon Icon="badge" IconSize="17" IconColor="{StaticResource Gray600}" />
                                 <Entry x:Name="TxtIdentifier" Grid.Column="1" 
                                        Placeholder="Masukkan NISN atau Email" 
                                        FontSize="13" 
@@ -155,21 +156,25 @@
                         <Label Text="Kata Sandi:" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray700}" />
                         <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource Gray300}" StrokeThickness="1" BackgroundColor="#F8FAFC" Padding="12,4">
                             <Grid ColumnDefinitions="30,*,40">
-                                <Label Text="🔒" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                                <controls:MaterialIcon Icon="lock" IconSize="17" IconColor="{StaticResource Gray600}" />
                                 <Entry x:Name="TxtPassword" Grid.Column="1" 
                                        Placeholder="Masukkan kata sandi" 
                                        IsPassword="True" 
                                        FontSize="13" 
                                        TextColor="{StaticResource Gray900}" />
-                                <Button Grid.Column="2" 
-                                        Text="👁️" 
+                                <Button x:Name="BtnTogglePassword" Grid.Column="2" 
+                                    Text=""
                                         FontSize="14"
                                         Clicked="OnTogglePasswordClicked" 
                                         BackgroundColor="Transparent" 
                                         TextColor="#64748B" 
                                         Padding="0" 
                                         WidthRequest="36" 
-                                        HeightRequest="36" />
+                                        HeightRequest="36">
+                                    <Button.ImageSource>
+                                        <FontImageSource FontFamily="MaterialSymbols" Glyph="visibility" Size="18" Color="#64748B" />
+                                    </Button.ImageSource>
+                                </Button>
                             </Grid>
                         </Border>
                     </VerticalStackLayout>

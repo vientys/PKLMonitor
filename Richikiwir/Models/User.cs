@@ -13,9 +13,14 @@ namespace Richikiwir.Models
     public class UserModel
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string AccessToken { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public string Nisn { get; set; } = string.Empty;
+        public bool IsActive { get; set; } = true;
+        public bool MustCompleteProfile { get; set; }
+        public bool MustChangePassword { get; set; }
         public UserRole Role { get; set; }
         public string RoleDisplayName => Role switch
         {

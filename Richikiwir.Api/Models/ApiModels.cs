@@ -19,7 +19,8 @@ namespace Richikiwir.Api.Models
         Masuk,
         Pulang,
         Izin,
-        Sakit
+        Sakit,
+        Alpa = 4
     }
 
     public enum AttendanceApprovalStatus
@@ -127,6 +128,8 @@ namespace Richikiwir.Api.Models
         public string PhoneNumber { get; set; } = string.Empty;
         public UserRole Role { get; set; } = UserRole.Siswa;
         public bool IsActive { get; set; } = true;
+        public bool MustCompleteProfile { get; set; } = true;
+        public bool MustChangePassword { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // One-to-One Navigasi Relasi ke Profil Khusus
@@ -233,6 +236,8 @@ namespace Richikiwir.Api.Models
         public double Longitude { get; set; }
         public string LocationAddress { get; set; } = string.Empty;
         public double DistanceMeters { get; set; }
+        public int LateMinutes { get; set; }
+        public bool IsLate { get; set; }
         public bool IsWithinRadius { get; set; } = true;
         public string Notes { get; set; } = string.Empty;
         public AttendanceApprovalStatus ApprovalStatus { get; set; } = AttendanceApprovalStatus.Menunggu;
@@ -280,8 +285,10 @@ namespace Richikiwir.Api.Models
     public class UserModel
     {
         public string Id { get; set; } = string.Empty;
+        public string AccessToken { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
         public string Identifier { get; set; } = string.Empty; // NIS / NIP / NIK / Username
+        public string Nisn { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
@@ -293,6 +300,9 @@ namespace Richikiwir.Api.Models
         public string JurusanName { get; set; } = "Rekayasa Perangkat Lunak";
         public string PhoneNumber { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsActive { get; set; } = true;
+        public bool MustCompleteProfile { get; set; }
+        public bool MustChangePassword { get; set; }
 
         public string RoleDisplayName => Role switch
         {
@@ -323,6 +333,8 @@ namespace Richikiwir.Api.Models
         public double Longitude { get; set; }
         public string LocationAddress { get; set; } = string.Empty;
         public double DistanceMeters { get; set; }
+        public int LateMinutes { get; set; }
+        public bool IsLate { get; set; }
         public string Notes { get; set; } = string.Empty;
         public string StatusText { get; set; } = "Hadir Tepat Waktu";
         public AttendanceApprovalStatus ApprovalStatus { get; set; } = AttendanceApprovalStatus.Menunggu;
@@ -392,9 +404,26 @@ namespace Richikiwir.Api.Models
         public string? Jurusan { get; set; } // RPL, DKV, PH, TKJ, TSM, TKR, TPM, MP, AK, APHPI
     }
 
-    /// <summary>
-    /// DTO Direktori Jurusan untuk API & File System Catalog
-    /// </summary>
+    public class AdminUserRequest
+    {
+        public string FullName { get; set; } = string.Empty;
+        public string Identifier { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Nisn { get; set; } = string.Empty;
+        public string JurusanCode { get; set; } = string.Empty;
+        public UserRole Role { get; set; } = UserRole.Siswa;
+    }
+
+    public class FirstLoginSetupRequest
+    {
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
+
     public class JurusanDirectoryDto
     {
         public string Kode { get; set; } = string.Empty; // RPL, DKV, PH, TKJ, TSM, TKR, TPM, MP, AK, APHPI
@@ -454,6 +483,8 @@ namespace Richikiwir.Api.Models
         public int TotalDays { get; set; }
         public int HadirCount { get; set; }
         public int IzinCount { get; set; }
+        public int SakitCount { get; set; }
+        public int AlpaCount { get; set; }
         public double AttendanceRate { get; set; }
         public int TotalLogbooks { get; set; }
     }

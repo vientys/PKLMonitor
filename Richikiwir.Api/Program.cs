@@ -1,10 +1,16 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Richikiwir.Api.Data;
 using Richikiwir.Api.Models;
+using Richikiwir.Api.Services;
 
+var adminSessions = new ConcurrentDictionary<string, (string UserId, DateTimeOffset ExpiresAt)>();
+var passwordHasher = new PasswordHasher<UserAccount>();
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure SQLite Database
@@ -13,6 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlite($"Data Source={dbPath}");
 });
+builder.Services.AddHostedService<DailyAbsenceService>();
 
 // Configure JSON serialization
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -39,6 +46,49 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+
+    var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    await db.Database.OpenConnectionAsync();
+    try
+    {
+        await using (var command = db.Database.GetDbConnection().CreateCommand())
+        {
+            command.CommandText = "PRAGMA table_info('users')";
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync()) columns.Add(reader.GetString(1));
+        }
+
+        var addedSetupColumns = false;
+        if (!columns.Contains("MustCompleteProfile"))
+        {
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE users ADD COLUMN MustCompleteProfile INTEGER NOT NULL DEFAULT 0");
+            addedSetupColumns = true;
+        }
+        if (!columns.Contains("MustChangePassword"))
+        {
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE users ADD COLUMN MustChangePassword INTEGER NOT NULL DEFAULT 0");
+            addedSetupColumns = true;
+        }
+        if (addedSetupColumns)
+            await db.Database.ExecuteSqlRawAsync("UPDATE users SET MustCompleteProfile = 1, MustChangePassword = 1");
+
+        var attendanceColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var command = db.Database.GetDbConnection().CreateCommand())
+        {
+            command.CommandText = "PRAGMA table_info('presensi')";
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync()) attendanceColumns.Add(reader.GetString(1));
+        }
+        if (!attendanceColumns.Contains("LateMinutes"))
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE presensi ADD COLUMN LateMinutes INTEGER NOT NULL DEFAULT 0");
+        if (!attendanceColumns.Contains("IsLate"))
+            await db.Database.ExecuteSqlRawAsync("ALTER TABLE presensi ADD COLUMN IsLate INTEGER NOT NULL DEFAULT 0");
+    }
+    finally
+    {
+        await db.Database.CloseConnectionAsync();
+    }
+
     AppDbContext.SeedData(db);
     AppDbContext.SyncPhysicalJurusanDirectories(builder.Environment.ContentRootPath, db);
 }
@@ -47,8 +97,46 @@ app.UseCors("AllowAll");
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+async Task<UserAccount?> ResolveAdminAsync(HttpContext context, AppDbContext db)
+{
+    if (!context.Request.IsHttps && !app.Environment.IsDevelopment()) return null;
+
+    var authorization = context.Request.Headers["Authorization"].ToString();
+    if (!authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) return null;
+
+    var token = authorization[7..].Trim();
+    if (!adminSessions.TryGetValue(token, out var session)) return null;
+    if (session.ExpiresAt <= DateTimeOffset.UtcNow)
+    {
+        adminSessions.TryRemove(token, out _);
+        return null;
+    }
+
+    return await db.Users.FirstOrDefaultAsync(user =>
+        user.Id == session.UserId && user.Role == UserRole.Admin && user.IsActive &&
+        !user.MustCompleteProfile && !user.MustChangePassword);
+}
+
 // Helper pembersih identifier
 static string CleanId(string? s) => string.IsNullOrWhiteSpace(s) ? string.Empty : s.Replace(" ", "").Replace("-", "").Trim().ToLowerInvariant();
+
+static double CalculateDistanceMeters(double latitude1, double longitude1, double latitude2, double longitude2)
+{
+    const double earthRadiusMeters = 6371000;
+    var latitudeDelta = (latitude2 - latitude1) * Math.PI / 180;
+    var longitudeDelta = (longitude2 - longitude1) * Math.PI / 180;
+    var haversine = Math.Pow(Math.Sin(latitudeDelta / 2), 2) +
+        Math.Cos(latitude1 * Math.PI / 180) * Math.Cos(latitude2 * Math.PI / 180) *
+        Math.Pow(Math.Sin(longitudeDelta / 2), 2);
+    return Math.Round(earthRadiusMeters * 2 * Math.Atan2(Math.Sqrt(haversine), Math.Sqrt(1 - haversine)), 1);
+}
+
+static string GenerateTemporaryPassword()
+{
+    const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$";
+    return string.Concat(Enumerable.Range(0, 12)
+        .Select(_ => alphabet[RandomNumberGenerator.GetInt32(alphabet.Length)]));
+}
 
 // ==========================================
 // 1. AUTH ENDPOINTS (3NF & JURUSAN DIRECTORY)
@@ -108,6 +196,7 @@ app.MapPost("/api/auth/login", async (AppDbContext db, [FromBody] LoginRequest r
     if (!user.IsActive)
     {
         return Results.BadRequest(ApiResponse<UserModel>.Fail("Akun Anda berstatus non-aktif. Silakan hubungi Koordinator PKL sekolah."));
+        return Results.NotFound(ApiResponse<UserModel>.Fail("Akun tidak ditemukan. Periksa NISN/NIP atau hubungi administrator."));
     }
 
     if (req.PreferredRole.HasValue && user.Role != req.PreferredRole.Value)
@@ -129,12 +218,20 @@ app.MapPost("/api/auth/login", async (AppDbContext db, [FromBody] LoginRequest r
     }
 
     // Validasi Password
-    bool isPasswordValid = string.Equals(user.PasswordHash, req.Password, StringComparison.Ordinal)
-        || string.Equals(req.Password, "password123", StringComparison.Ordinal);
+    bool isHashedPassword = user.PasswordHash.StartsWith("AQAAAA", StringComparison.Ordinal);
+    bool isPasswordValid = isHashedPassword
+        ? passwordHasher.VerifyHashedPassword(user, user.PasswordHash, req.Password) != PasswordVerificationResult.Failed
+        : string.Equals(user.PasswordHash, req.Password, StringComparison.Ordinal);
 
     if (!isPasswordValid)
     {
         return Results.BadRequest(ApiResponse<UserModel>.Fail("Kata sandi yang Anda masukkan salah."));
+    }
+
+    if (!isHashedPassword)
+    {
+        user.PasswordHash = passwordHasher.HashPassword(user, req.Password);
+        await db.SaveChangesAsync();
     }
 
     // Bangun DTO UserModel dengan data dari entitas 3NF
@@ -194,15 +291,65 @@ app.MapPost("/api/auth/login", async (AppDbContext db, [FromBody] LoginRequest r
         JurusanCode = jurCode,
         JurusanName = jurName,
         PhoneNumber = user.PhoneNumber,
-        CreatedAt = user.CreatedAt
+        CreatedAt = user.CreatedAt,
+        MustCompleteProfile = user.MustCompleteProfile,
+        MustChangePassword = user.MustChangePassword
     };
+
+    var accessToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+        .TrimEnd('=').Replace('+', '-').Replace('/', '_');
+    adminSessions[accessToken] = (user.Id, DateTimeOffset.UtcNow.AddHours(8));
+    safeUser.AccessToken = accessToken;
 
     return Results.Ok(ApiResponse<UserModel>.Ok(safeUser, $"Selamat datang kembali, {user.FullName}! (Direktori Jurusan: {jurCode})"));
 });
 
-// ==========================================
-// 1.1 JURUSAN DIRECTORY ENDPOINTS (10 JURUSAN)
-// ==========================================
+app.MapPut("/api/account/first-login", async (
+    HttpContext context, AppDbContext db, [FromBody] FirstLoginSetupRequest request) =>
+{
+    if (!context.Request.IsHttps && !app.Environment.IsDevelopment()) return Results.Unauthorized();
+    var authorization = context.Request.Headers["Authorization"].ToString();
+    if (!authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) return Results.Unauthorized();
+    var token = authorization[7..].Trim();
+    if (!adminSessions.TryGetValue(token, out var session) || session.ExpiresAt <= DateTimeOffset.UtcNow)
+        return Results.Unauthorized();
+
+    var user = await db.Users.FirstOrDefaultAsync(account => account.Id == session.UserId && account.IsActive);
+    if (user == null) return Results.Unauthorized();
+    if (!user.MustCompleteProfile && !user.MustChangePassword)
+        return Results.BadRequest(ApiResponse<object>.Fail("Pengaturan awal akun ini sudah selesai."));
+
+    var fullName = request.FullName.Trim();
+    var email = request.Email.Trim();
+    var phoneNumber = request.PhoneNumber.Trim();
+    if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(phoneNumber))
+        return Results.BadRequest(ApiResponse<object>.Fail("Nama, email, dan nomor telepon wajib dilengkapi."));
+    if (request.NewPassword.Length < 8)
+        return Results.BadRequest(ApiResponse<object>.Fail("Kata sandi baru minimal 8 karakter."));
+    if (passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.NewPassword) != PasswordVerificationResult.Failed)
+        return Results.BadRequest(ApiResponse<object>.Fail("Kata sandi baru harus berbeda dari kata sandi sementara."));
+    if (await db.Users.AnyAsync(account => account.Id != user.Id && account.Email.ToLower() == email.ToLower()))
+        return Results.Conflict(ApiResponse<object>.Fail("Email sudah digunakan akun lain."));
+
+    user.FullName = fullName;
+    user.Email = email;
+    user.PhoneNumber = phoneNumber;
+    user.PasswordHash = passwordHasher.HashPassword(user, request.NewPassword);
+    user.MustCompleteProfile = false;
+    user.MustChangePassword = false;
+    await db.SaveChangesAsync();
+
+    return Results.Ok(ApiResponse<object>.Ok(new
+    {
+        user.Id,
+        user.FullName,
+        user.Email,
+        user.PhoneNumber,
+        user.MustCompleteProfile,
+        user.MustChangePassword
+    }, "Profil lengkap dan kata sandi berhasil diperbarui."));
+});
+
 
 // GET /api/jurusan
 app.MapGet("/api/jurusan", async (AppDbContext db) =>
@@ -412,6 +559,217 @@ app.MapGet("/api/users", async (AppDbContext db, string? role, string? jurusan) 
     return Results.Ok(ApiResponse<object>.Ok(list, "Daftar seluruh akun tersimpan di database 3NF & direktori jurusan."));
 });
 
+// Admin-only account management endpoints
+app.MapGet("/api/admin/users", async (HttpContext context, AppDbContext db) =>
+{
+    if (await ResolveAdminAsync(context, db) == null) return Results.Unauthorized();
+
+    var accountEntities = await db.Users
+        .Include(user => user.SiswaProfile)
+            .ThenInclude(profile => profile!.Kelas)
+                .ThenInclude(classroom => classroom!.Jurusan)
+        .Include(user => user.SiswaProfile)
+            .ThenInclude(profile => profile!.MitraIndustri)
+        .Include(user => user.GuruProfile)
+            .ThenInclude(profile => profile!.Sekolah)
+        .Include(user => user.MentorIndustriProfile)
+            .ThenInclude(profile => profile!.MitraIndustri)
+        .OrderBy(user => user.Role).ThenBy(user => user.FullName)
+        .ToListAsync();
+
+    var accounts = accountEntities.Select(user => new UserModel
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Identifier = user.SiswaProfile != null ? user.SiswaProfile.Nis
+                : user.GuruProfile != null ? user.GuruProfile.Nip
+                : user.MentorIndustriProfile != null ? user.MentorIndustriProfile.NikKaryawan
+                : user.Username,
+            Username = user.Username,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            Nisn = user.SiswaProfile == null ? string.Empty : user.SiswaProfile.Nisn,
+            SchoolName = user.SiswaProfile?.Kelas?.Jurusan?.Sekolah?.NamaSekolah
+                ?? user.GuruProfile?.Sekolah?.NamaSekolah ?? string.Empty,
+            CompanyName = user.SiswaProfile?.MitraIndustri?.NamaPerusahaan
+                ?? user.MentorIndustriProfile?.MitraIndustri?.NamaPerusahaan ?? string.Empty,
+            MajorOrDepartment = user.SiswaProfile?.Kelas?.NamaKelas
+                ?? user.GuruProfile?.Jabatan ?? user.MentorIndustriProfile?.Divisi ?? string.Empty,
+            JurusanCode = user.SiswaProfile?.Kelas?.Jurusan?.KodeJurusan ?? string.Empty,
+            JurusanName = user.SiswaProfile?.Kelas?.Jurusan?.NamaJurusan ?? string.Empty,
+            Role = user.Role,
+            IsActive = user.IsActive,
+            CreatedAt = user.CreatedAt
+        }).ToList();
+
+    return Results.Ok(ApiResponse<List<UserModel>>.Ok(accounts, "Daftar akun berhasil dimuat."));
+});
+
+app.MapPost("/api/admin/users", async (HttpContext context, AppDbContext db, [FromBody] AdminUserRequest request) =>
+{
+    if (await ResolveAdminAsync(context, db) == null) return Results.Unauthorized();
+
+    var fullName = request.FullName.Trim();
+    var identifier = request.Identifier.Trim();
+    if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(identifier))
+        return Results.BadRequest(ApiResponse<object>.Fail("Nama dan identitas login wajib diisi."));
+    if (!Enum.IsDefined(request.Role))
+        return Results.BadRequest(ApiResponse<object>.Fail("Peran akun tidak valid."));
+    if (await db.Users.AnyAsync(user => user.Username.ToLower() == identifier.ToLower()))
+        return Results.Conflict(ApiResponse<object>.Fail("Identitas login sudah digunakan."));
+
+    var temporaryPassword = GenerateTemporaryPassword();
+    var account = new UserAccount
+    {
+        Username = identifier,
+        FullName = fullName,
+        Email = request.Email.Trim(),
+        PhoneNumber = request.PhoneNumber.Trim(),
+        Role = request.Role,
+        IsActive = true,
+        MustCompleteProfile = true,
+        MustChangePassword = true
+    };
+    account.PasswordHash = passwordHasher.HashPassword(account, temporaryPassword);
+
+    switch (request.Role)
+    {
+        case UserRole.Siswa:
+            var nisn = request.Nisn.Trim();
+            if (string.IsNullOrWhiteSpace(nisn) || string.IsNullOrWhiteSpace(request.JurusanCode))
+                return Results.BadRequest(ApiResponse<object>.Fail("NISN dan jurusan wajib diisi untuk akun siswa."));
+            if (await db.SiswaProfiles.AnyAsync(profile => profile.Nisn == nisn || profile.Nis == identifier))
+                return Results.Conflict(ApiResponse<object>.Fail("NIS atau NISN sudah digunakan."));
+
+            var studentClass = await db.Kelas
+                .Include(classroom => classroom.Jurusan)
+                .Where(classroom => classroom.Jurusan != null && classroom.Jurusan.KodeJurusan == request.JurusanCode)
+                .OrderBy(classroom => classroom.NamaKelas)
+                .FirstOrDefaultAsync();
+            var studentCompany = await db.MitraIndustri.OrderBy(company => company.NamaPerusahaan).FirstOrDefaultAsync();
+            if (studentClass == null || studentCompany == null)
+                return Results.BadRequest(ApiResponse<object>.Fail("Data kelas atau mitra industri belum tersedia."));
+
+            account.SiswaProfile = new SiswaProfile
+            {
+                Nis = identifier,
+                Nisn = nisn,
+                KelasId = studentClass.Id,
+                MitraIndustriId = studentCompany.Id
+            };
+            break;
+        case UserRole.PembimbingSekolah:
+            var school = await db.Sekolah.OrderBy(item => item.NamaSekolah).FirstOrDefaultAsync();
+            if (school == null) return Results.BadRequest(ApiResponse<object>.Fail("Data sekolah belum tersedia."));
+            if (await db.GuruProfiles.AnyAsync(profile => profile.Nip == identifier))
+                return Results.Conflict(ApiResponse<object>.Fail("NIP sudah digunakan."));
+            account.GuruProfile = new GuruProfile { Nip = identifier, SekolahId = school.Id };
+            break;
+        case UserRole.PembimbingIndustri:
+            var company = await db.MitraIndustri.OrderBy(item => item.NamaPerusahaan).FirstOrDefaultAsync();
+            if (company == null) return Results.BadRequest(ApiResponse<object>.Fail("Data mitra industri belum tersedia."));
+            if (await db.MentorProfiles.AnyAsync(profile => profile.NikKaryawan == identifier))
+                return Results.Conflict(ApiResponse<object>.Fail("NIK atau ID karyawan sudah digunakan."));
+            account.MentorIndustriProfile = new MentorIndustriProfile { NikKaryawan = identifier, MitraIndustriId = company.Id };
+            break;
+    }
+
+    db.Users.Add(account);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/admin/users/{account.Id}", ApiResponse<object>.Ok(
+        new { account.Id, TemporaryPassword = temporaryPassword }, "Akun berhasil ditambahkan. Bagikan kata sandi sementara ini kepada pengguna."));
+});
+
+app.MapPut("/api/admin/users/{id}", async (HttpContext context, AppDbContext db, string id, [FromBody] AdminUserRequest request) =>
+{
+    if (await ResolveAdminAsync(context, db) == null) return Results.Unauthorized();
+
+    var account = await db.Users
+        .Include(user => user.SiswaProfile)
+        .Include(user => user.GuruProfile)
+        .Include(user => user.MentorIndustriProfile)
+        .FirstOrDefaultAsync(user => user.Id == id);
+    if (account == null) return Results.NotFound(ApiResponse<object>.Fail("Akun tidak ditemukan."));
+    if (request.Role != account.Role)
+        return Results.BadRequest(ApiResponse<object>.Fail("Peran akun tidak dapat diubah setelah akun dibuat."));
+
+    var fullName = request.FullName.Trim();
+    var identifier = request.Identifier.Trim();
+    if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(identifier))
+        return Results.BadRequest(ApiResponse<object>.Fail("Nama dan identitas login wajib diisi."));
+    if (await db.Users.AnyAsync(user => user.Id != id && user.Username.ToLower() == identifier.ToLower()))
+        return Results.Conflict(ApiResponse<object>.Fail("Identitas login sudah digunakan."));
+
+    account.FullName = fullName;
+    account.Username = identifier;
+    account.Email = request.Email.Trim();
+    account.PhoneNumber = request.PhoneNumber.Trim();
+    if (!string.IsNullOrWhiteSpace(request.Password))
+    {
+        if (request.Password.Length < 8)
+            return Results.BadRequest(ApiResponse<object>.Fail("Kata sandi minimal 8 karakter."));
+        account.PasswordHash = passwordHasher.HashPassword(account, request.Password);
+        account.MustCompleteProfile = true;
+        account.MustChangePassword = true;
+    }
+
+    if (account.SiswaProfile != null)
+    {
+        if (await db.SiswaProfiles.AnyAsync(profile => profile.UserId != id && profile.Nis == identifier))
+            return Results.Conflict(ApiResponse<object>.Fail("NIS sudah digunakan."));
+        account.SiswaProfile.Nis = identifier;
+        if (!string.IsNullOrWhiteSpace(request.Nisn))
+        {
+            if (await db.SiswaProfiles.AnyAsync(profile => profile.UserId != id && profile.Nisn == request.Nisn.Trim()))
+                return Results.Conflict(ApiResponse<object>.Fail("NISN sudah digunakan."));
+            account.SiswaProfile.Nisn = request.Nisn.Trim();
+        }
+    }
+    else if (account.GuruProfile != null)
+    {
+        if (await db.GuruProfiles.AnyAsync(profile => profile.UserId != id && profile.Nip == identifier))
+            return Results.Conflict(ApiResponse<object>.Fail("NIP sudah digunakan."));
+        account.GuruProfile.Nip = identifier;
+    }
+    else if (account.MentorIndustriProfile != null)
+    {
+        if (await db.MentorProfiles.AnyAsync(profile => profile.UserId != id && profile.NikKaryawan == identifier))
+            return Results.Conflict(ApiResponse<object>.Fail("NIK atau ID karyawan sudah digunakan."));
+        account.MentorIndustriProfile.NikKaryawan = identifier;
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok(ApiResponse<object>.Ok(new { account.Id }, "Perubahan akun berhasil disimpan."));
+});
+
+app.MapDelete("/api/admin/users/{id}", async (HttpContext context, AppDbContext db, string id) =>
+{
+    var admin = await ResolveAdminAsync(context, db);
+    if (admin == null) return Results.Unauthorized();
+    if (admin.Id == id) return Results.BadRequest(ApiResponse<object>.Fail("Akun admin yang sedang digunakan tidak dapat dihapus."));
+
+    var account = await db.Users.FirstOrDefaultAsync(user => user.Id == id);
+    if (account == null) return Results.NotFound(ApiResponse<object>.Fail("Akun tidak ditemukan."));
+    if (account.Role == UserRole.Admin && account.IsActive &&
+        await db.Users.CountAsync(user => user.Role == UserRole.Admin && user.IsActive) <= 1)
+        return Results.BadRequest(ApiResponse<object>.Fail("Admin aktif terakhir tidak dapat dihapus."));
+
+    var hasHistory = await db.Presensi.AnyAsync(record =>
+            record.VerifiedByUserId == id || (record.SiswaProfile != null && record.SiswaProfile.UserId == id))
+        || await db.JurnalLogbook.AnyAsync(entry =>
+            entry.ApprovedByUserId == id || (entry.SiswaProfile != null && entry.SiswaProfile.UserId == id))
+        || await db.SiswaProfiles.AnyAsync(profile => profile.GuruPembimbingId == id || profile.MentorIndustriId == id);
+    if (hasHistory)
+        return Results.Conflict(ApiResponse<object>.Fail("Akun masih terhubung ke presensi, jurnal, atau penugasan dan tidak dapat dihapus."));
+
+    db.Users.Remove(account);
+    await db.SaveChangesAsync();
+    foreach (var session in adminSessions.Where(pair => pair.Value.UserId == id).ToArray())
+        adminSessions.TryRemove(session.Key, out _);
+
+    return Results.Ok(ApiResponse<object>.Ok(new { account.Id }, "Akun berhasil dihapus."));
+});
+
 // GET /api/monitoring/summary
 app.MapGet("/api/monitoring/summary", async (AppDbContext db) =>
 {
@@ -433,7 +791,10 @@ app.MapGet("/api/monitoring/summary", async (AppDbContext db) =>
         todayTotal = todayAtt.Count,
         todayMasuk = todayAtt.Count(a => a.Type == AttendanceType.Masuk),
         todayPulang = todayAtt.Count(a => a.Type == AttendanceType.Pulang),
-        todayIzin = todayAtt.Count(a => a.Type == AttendanceType.Izin || a.Type == AttendanceType.Sakit),
+        todayIzin = todayAtt.Count(a => a.Type == AttendanceType.Izin),
+        todaySakit = todayAtt.Count(a => a.Type == AttendanceType.Sakit),
+        todayAlpa = todayAtt.Count(a => a.Type == AttendanceType.Alpa),
+        todayLate = todayAtt.Count(a => a.Type == AttendanceType.Masuk && a.IsLate),
         withinRadiusCount = attendances.Count(a => a.DistanceMeters <= 100.0),
         outsideRadiusCount = attendances.Count(a => a.DistanceMeters > 100.0),
         pendingApprovalCount = attendances.Count(a => a.ApprovalStatus == AttendanceApprovalStatus.Menunggu),
@@ -512,8 +873,12 @@ app.MapGet("/api/students", async (AppDbContext db, string? jurusan) =>
 // Helper mapping PresensiRecord -> AttendanceRecord DTO
 static AttendanceRecord MapAttendanceDto(PresensiRecord p)
 {
-    bool isRadiusValid = p.DistanceMeters <= 100.0;
-    string statusText = isRadiusValid ? "Hadir Tepat Waktu (Radius OK)" : $"Presensi Di Luar Radius ({p.DistanceMeters:F1}m)";
+    bool isRadiusValid = p.DistanceMeters <= (p.MitraIndustri?.RadiusMeters ?? 100.0);
+    string statusText = !isRadiusValid
+        ? $"Presensi Di Luar Radius ({p.DistanceMeters:F1}m)"
+        : p.Type == AttendanceType.Masuk && p.IsLate
+            ? $"Terlambat {p.LateMinutes} menit"
+            : p.Type == AttendanceType.Masuk ? "Hadir Tepat Waktu" : p.Type.ToString();
 
     var jurCode = p.SiswaProfile?.Kelas?.Jurusan?.KodeJurusan ?? "RPL";
     var jurName = p.SiswaProfile?.Kelas?.Jurusan?.NamaJurusan ?? "Rekayasa Perangkat Lunak";
@@ -534,6 +899,8 @@ static AttendanceRecord MapAttendanceDto(PresensiRecord p)
         Longitude = p.Longitude,
         LocationAddress = p.LocationAddress,
         DistanceMeters = p.DistanceMeters,
+        LateMinutes = p.LateMinutes,
+        IsLate = p.IsLate,
         Notes = p.Notes,
         StatusText = statusText,
         ApprovalStatus = p.ApprovalStatus,
@@ -622,6 +989,8 @@ app.MapGet("/api/attendance/today", async (AppDbContext db, string identifier) =
 
     var checkIn = todayRecords.FirstOrDefault(a => a.Type == AttendanceType.Masuk);
     var checkOut = todayRecords.FirstOrDefault(a => a.Type == AttendanceType.Pulang);
+    var absence = todayRecords.FirstOrDefault(a =>
+        a.Type == AttendanceType.Izin || a.Type == AttendanceType.Sakit || a.Type == AttendanceType.Alpa);
 
     return Results.Ok(ApiResponse<object>.Ok(new
     {
@@ -629,6 +998,9 @@ app.MapGet("/api/attendance/today", async (AppDbContext db, string identifier) =
         CheckIn = checkIn,
         HasCheckedOut = checkOut != null,
         CheckOut = checkOut,
+        HasAbsence = absence != null,
+        Absence = absence,
+        Status = checkIn != null ? "Hadir" : absence?.Type.ToString() ?? "Belum Absen",
         Date = today.ToString("yyyy-MM-dd")
     }, "Status presensi hari ini."));
 });
@@ -672,6 +1044,54 @@ static async Task<SiswaProfile?> FindStudentProfile(AppDbContext db, string? stu
     return await query.FirstOrDefaultAsync();
 }
 
+app.MapPost("/api/attendance/absence", async (AppDbContext db, [FromBody] AttendanceCheckInRequest req) =>
+{
+    if (req.Type is not (AttendanceType.Izin or AttendanceType.Sakit or AttendanceType.Alpa))
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Kategori ketidakhadiran harus Izin, Sakit, atau Alpa."));
+
+    var profile = await FindStudentProfile(db, req.StudentId, req.StudentNisn, req.StudentNis, req.StudentName);
+    if (profile == null)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Data profil siswa tidak ditemukan."));
+
+    var today = DateTime.Today;
+    var hasTodayRecord = await db.Presensi.AnyAsync(record =>
+        record.SiswaProfileId == profile.Id && record.Timestamp >= today && record.Timestamp < today.AddDays(1));
+    if (hasTodayRecord)
+        return Results.Conflict(ApiResponse<AttendanceRecord>.Fail("Presensi hari ini sudah tercatat; status ketidakhadiran tidak dapat ditambahkan."));
+
+    var companyId = profile.MitraIndustriId;
+    if (string.IsNullOrWhiteSpace(companyId))
+    {
+        companyId = await db.MitraIndustri.Select(company => company.Id).FirstOrDefaultAsync();
+        if (companyId == null)
+            return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Mitra industri siswa belum tersedia."));
+    }
+
+    var record = new PresensiRecord
+    {
+        SiswaProfileId = profile.Id,
+        MitraIndustriId = companyId,
+        Type = req.Type,
+        Timestamp = DateTime.Now,
+        LocationAddress = "Tidak hadir di lokasi PKL",
+        DistanceMeters = 0,
+        IsWithinRadius = false,
+        Notes = string.IsNullOrWhiteSpace(req.Notes) ? req.Type.ToString() : req.Notes.Trim(),
+        ApprovalStatus = AttendanceApprovalStatus.Menunggu
+    };
+
+    db.Presensi.Add(record);
+    await db.SaveChangesAsync();
+    await db.Entry(record).Reference(item => item.SiswaProfile).Query()
+        .Include(student => student!.User)
+        .Include(student => student!.Kelas).ThenInclude(classroom => classroom!.Jurusan)
+        .LoadAsync();
+    await db.Entry(record).Reference(item => item.MitraIndustri).LoadAsync();
+
+    return Results.Created($"/api/attendance/{record.Id}",
+        ApiResponse<AttendanceRecord>.Ok(MapAttendanceDto(record), $"Status {req.Type} berhasil dicatat."));
+});
+
 // POST /api/attendance/check-in
 app.MapPost("/api/attendance/check-in", async (AppDbContext db, IWebHostEnvironment env, [FromBody] AttendanceCheckInRequest req) =>
 {
@@ -681,29 +1101,51 @@ app.MapPost("/api/attendance/check-in", async (AppDbContext db, IWebHostEnvironm
         return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Data profil siswa tidak ditemukan di database. Pastikan login dengan NIS yang valid."));
     }
 
-    // Resolusi mitra industri tempat siswa magang (3NF)
-    string mitraId = profile.MitraIndustriId;
-    if (string.IsNullOrEmpty(mitraId))
-    {
-        var defaultMitra = await db.MitraIndustri.FirstOrDefaultAsync();
-        mitraId = defaultMitra?.Id ?? Guid.NewGuid().ToString();
-    }
+    if (req.Type != AttendanceType.Masuk)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Gunakan kategori Masuk untuk check-in."));
+    var today = DateTime.Today;
+    var hasExistingCheckInOrAbsence = await db.Presensi.AnyAsync(record =>
+        record.SiswaProfileId == profile.Id && record.Timestamp >= today && record.Timestamp < today.AddDays(1) &&
+        (record.Type == AttendanceType.Masuk || record.Type == AttendanceType.Izin ||
+         record.Type == AttendanceType.Sakit || record.Type == AttendanceType.Alpa));
+    if (hasExistingCheckInOrAbsence)
+        return Results.Conflict(ApiResponse<AttendanceRecord>.Fail("Status kehadiran hari ini sudah tercatat."));
 
-    bool isRadiusValid = req.DistanceMeters <= 100.0;
+    var company = profile.MitraIndustri ?? await db.MitraIndustri
+        .FirstOrDefaultAsync(item => item.Id == profile.MitraIndustriId);
+    if (company == null)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Mitra industri siswa belum memiliki lokasi presensi."));
+    if (req.Latitude is < -90 or > 90 || req.Longitude is < -180 or > 180)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Koordinat GPS tidak valid."));
+
+    var distanceMeters = CalculateDistanceMeters(req.Latitude, req.Longitude, company.Latitude, company.Longitude);
+    if (distanceMeters > company.RadiusMeters)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail(
+            $"Presensi ditolak. Jarak Anda {distanceMeters:F1} m, melebihi radius {company.RadiusMeters:F0} m dari lokasi kantor."));
+
+    var checkInTimestamp = DateTime.Now;
+    var lateMinutes = 0;
+    if (TimeOnly.TryParse(company.JamMasuk, out var scheduledStart))
+    {
+        var minutesAfterStart = (TimeOnly.FromDateTime(checkInTimestamp) - scheduledStart).TotalMinutes;
+        if (minutesAfterStart > 0) lateMinutes = (int)Math.Ceiling(minutesAfterStart);
+    }
 
     var record = new PresensiRecord
     {
         SiswaProfileId = profile.Id,
-        MitraIndustriId = mitraId,
+        MitraIndustriId = company.Id,
         Type = AttendanceType.Masuk,
-        Timestamp = DateTime.Now,
+        Timestamp = checkInTimestamp,
         Latitude = req.Latitude,
         Longitude = req.Longitude,
         LocationAddress = req.LocationAddress ?? "Gedung Kantor Mitra Industri",
-        DistanceMeters = req.DistanceMeters,
-        IsWithinRadius = isRadiusValid,
+        DistanceMeters = distanceMeters,
+        LateMinutes = lateMinutes,
+        IsLate = lateMinutes > 0,
+        IsWithinRadius = true,
         Notes = req.Notes ?? "Presensi masuk via Mobile App.",
-        ApprovalStatus = isRadiusValid ? AttendanceApprovalStatus.Disetujui : AttendanceApprovalStatus.Menunggu,
+        ApprovalStatus = AttendanceApprovalStatus.Disetujui,
         PhotoBase64 = req.PhotoBase64
     };
 
@@ -764,23 +1206,44 @@ app.MapPost("/api/attendance/check-out", async (AppDbContext db, [FromBody] Atte
         return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Data profil siswa tidak ditemukan di database. Pastikan login dengan NIS yang valid."));
     }
 
-    string mitraId = profile.MitraIndustriId;
-    if (string.IsNullOrEmpty(mitraId))
-    {
-        var defaultMitra = await db.MitraIndustri.FirstOrDefaultAsync();
-        mitraId = defaultMitra?.Id ?? Guid.NewGuid().ToString();
-    }
+    if (req.Type != AttendanceType.Pulang)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Gunakan kategori Pulang untuk check-out."));
+    var today = DateTime.Today;
+    var hasAbsenceToday = await db.Presensi.AnyAsync(record =>
+        record.SiswaProfileId == profile.Id && record.Timestamp >= today && record.Timestamp < today.AddDays(1) &&
+        (record.Type == AttendanceType.Izin || record.Type == AttendanceType.Sakit || record.Type == AttendanceType.Alpa));
+    if (hasAbsenceToday)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Check-out tidak tersedia karena status hari ini adalah ketidakhadiran."));
+    var hasCheckedInToday = await db.Presensi.AnyAsync(record =>
+        record.SiswaProfileId == profile.Id && record.Timestamp >= today && record.Timestamp < today.AddDays(1) && record.Type == AttendanceType.Masuk);
+    if (!hasCheckedInToday)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Presensi masuk hari ini belum tercatat."));
+    var hasCheckedOutToday = await db.Presensi.AnyAsync(record =>
+        record.SiswaProfileId == profile.Id && record.Timestamp >= today && record.Timestamp < today.AddDays(1) && record.Type == AttendanceType.Pulang);
+    if (hasCheckedOutToday)
+        return Results.Conflict(ApiResponse<AttendanceRecord>.Fail("Presensi pulang hari ini sudah tercatat."));
+
+    var company = profile.MitraIndustri ?? await db.MitraIndustri
+        .FirstOrDefaultAsync(item => item.Id == profile.MitraIndustriId);
+    if (company == null)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Mitra industri siswa belum memiliki lokasi presensi."));
+    if (req.Latitude is < -90 or > 90 || req.Longitude is < -180 or > 180)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail("Koordinat GPS tidak valid."));
+    var distanceMeters = CalculateDistanceMeters(req.Latitude, req.Longitude, company.Latitude, company.Longitude);
+    if (distanceMeters > company.RadiusMeters)
+        return Results.BadRequest(ApiResponse<AttendanceRecord>.Fail(
+            $"Check-out ditolak. Jarak Anda {distanceMeters:F1} m, melebihi radius {company.RadiusMeters:F0} m dari lokasi kantor."));
 
     var record = new PresensiRecord
     {
         SiswaProfileId = profile.Id,
-        MitraIndustriId = mitraId,
+        MitraIndustriId = company.Id,
         Type = AttendanceType.Pulang,
         Timestamp = DateTime.Now,
         Latitude = req.Latitude,
         Longitude = req.Longitude,
         LocationAddress = req.LocationAddress ?? "Gedung Kantor Mitra Industri",
-        DistanceMeters = req.DistanceMeters,
+        DistanceMeters = distanceMeters,
         IsWithinRadius = true,
         Notes = req.Notes ?? "Presensi pulang harian.",
         ApprovalStatus = AttendanceApprovalStatus.Disetujui,
@@ -993,7 +1456,9 @@ app.MapGet("/api/stats/{identifier}", async (AppDbContext db, string identifier)
 
     int totalDays = records.Select(r => r.Timestamp.Date).Distinct().Count();
     int hadirCount = records.Count(r => r.Type == AttendanceType.Masuk);
-    int izinCount = records.Count(r => r.Type == AttendanceType.Izin || r.Type == AttendanceType.Sakit);
+    int izinCount = records.Count(r => r.Type == AttendanceType.Izin);
+    int sakitCount = records.Count(r => r.Type == AttendanceType.Sakit);
+    int alpaCount = records.Count(r => r.Type == AttendanceType.Alpa);
     double attendanceRate = totalDays > 0 ? (hadirCount * 100.0 / totalDays) : 0.0;
     if (attendanceRate > 100.0) attendanceRate = 100.0;
 
@@ -1002,6 +1467,8 @@ app.MapGet("/api/stats/{identifier}", async (AppDbContext db, string identifier)
         TotalDays = totalDays,
         HadirCount = hadirCount,
         IzinCount = izinCount,
+        SakitCount = sakitCount,
+        AlpaCount = alpaCount,
         AttendanceRate = Math.Round(attendanceRate, 1),
         TotalLogbooks = logs.Count
     };
@@ -1009,10 +1476,93 @@ app.MapGet("/api/stats/{identifier}", async (AppDbContext db, string identifier)
     return Results.Ok(ApiResponse<UserStatsResponse>.Ok(stats, "Statistik kehadiran siswa dihitung dari database 3NF."));
 });
 
-// GET /api/company/geofence
-app.MapGet("/api/company/geofence", async (AppDbContext db) =>
+app.MapGet("/api/admin/company-settings", async (HttpContext context, AppDbContext db) =>
 {
-    var company = await db.MitraIndustri.FirstOrDefaultAsync();
+    if (await ResolveAdminAsync(context, db) == null) return Results.Unauthorized();
+
+    var companies = await db.MitraIndustri
+        .OrderBy(company => company.NamaPerusahaan)
+        .Select(company => new
+        {
+            company.Id,
+            company.NamaPerusahaan,
+            company.BidangUsaha,
+            company.Alamat,
+            company.KontakPerson,
+            company.NoTelepon,
+            company.JamMasuk,
+            company.JamPulang,
+            company.Latitude,
+            company.Longitude,
+            company.RadiusMeters
+        })
+        .ToListAsync();
+
+    return Results.Ok(ApiResponse<object>.Ok(companies, "Pengaturan mitra berhasil dimuat."));
+});
+
+app.MapPut("/api/admin/company-settings/{id}", async (
+    HttpContext context, AppDbContext db, string id, [FromBody] CompanySettingsRequest request) =>
+{
+    if (await ResolveAdminAsync(context, db) == null) return Results.Unauthorized();
+
+    if (string.IsNullOrWhiteSpace(request.NamaPerusahaan) || string.IsNullOrWhiteSpace(request.Alamat))
+        return Results.BadRequest(ApiResponse<object>.Fail("Nama perusahaan dan alamat wajib diisi."));
+    if (request.Latitude is < -90 or > 90 || request.Longitude is < -180 or > 180)
+        return Results.BadRequest(ApiResponse<object>.Fail("Koordinat latitude atau longitude tidak valid."));
+    if (request.RadiusMeters is < 1 or > 5000)
+        return Results.BadRequest(ApiResponse<object>.Fail("Radius geofence harus antara 1 dan 5000 meter."));
+    if (!TimeOnly.TryParse(request.JamMasuk, out _) || !TimeOnly.TryParse(request.JamPulang, out _))
+        return Results.BadRequest(ApiResponse<object>.Fail("Format jam kerja harus HH:mm."));
+
+    var company = await db.MitraIndustri.FirstOrDefaultAsync(item => item.Id == id);
+    if (company == null) return Results.NotFound(ApiResponse<object>.Fail("Data perusahaan tidak ditemukan."));
+
+    company.NamaPerusahaan = request.NamaPerusahaan.Trim();
+    company.BidangUsaha = request.BidangUsaha.Trim();
+    company.Alamat = request.Alamat.Trim();
+    company.KontakPerson = request.KontakPerson.Trim();
+    company.NoTelepon = request.NoTelepon.Trim();
+    company.JamMasuk = request.JamMasuk.Trim();
+    company.JamPulang = request.JamPulang.Trim();
+    company.Latitude = request.Latitude;
+    company.Longitude = request.Longitude;
+    company.RadiusMeters = request.RadiusMeters;
+
+    await db.SaveChangesAsync();
+    return Results.Ok(ApiResponse<object>.Ok(new
+    {
+        company.Id,
+        company.NamaPerusahaan,
+        company.BidangUsaha,
+        company.Alamat,
+        company.KontakPerson,
+        company.NoTelepon,
+        company.JamMasuk,
+        company.JamPulang,
+        company.Latitude,
+        company.Longitude,
+        company.RadiusMeters
+    }, "Data perusahaan dan lokasi presensi berhasil disimpan."));
+});
+
+// GET /api/company/geofence?identifier=20241001
+app.MapGet("/api/company/geofence", async (AppDbContext db, string? identifier) =>
+{
+    MitraIndustri? company;
+    if (!string.IsNullOrWhiteSpace(identifier))
+    {
+        var studentProfile = await db.SiswaProfiles.FirstOrDefaultAsync(profile =>
+            profile.UserId == identifier || profile.Nis == identifier || profile.Nisn == identifier);
+        if (studentProfile == null)
+            return Results.NotFound(ApiResponse<object>.Fail("Profil siswa tidak ditemukan untuk menentukan lokasi perusahaan."));
+        company = await db.MitraIndustri.FirstOrDefaultAsync(item => item.Id == studentProfile.MitraIndustriId);
+    }
+    else
+    {
+        company = await db.MitraIndustri.FirstOrDefaultAsync();
+    }
+
     if (company != null)
     {
         return Results.Ok(ApiResponse<object>.Ok(new

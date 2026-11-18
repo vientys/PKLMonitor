@@ -7,14 +7,16 @@ namespace Richikiwir.Models
         Masuk,
         Pulang,
         Izin,
-        Sakit
+        Sakit,
+        Alpa = 4
     }
 
     public enum AttendanceApprovalStatus
     {
-        MenungguVerifikasi,
-        Disetujui,
-        Ditolak
+        MenungguVerifikasi = 0,
+        Menunggu = 0,
+        Disetujui = 1,
+        Ditolak = 2
     }
 
     public class AttendanceRecord
@@ -31,6 +33,8 @@ namespace Richikiwir.Models
         public double Longitude { get; set; }
         public string LocationAddress { get; set; } = string.Empty;
         public double DistanceMeters { get; set; } = 35.0;
+        public int LateMinutes { get; set; }
+        public bool IsLate { get; set; }
         public bool IsWithinGeofence => DistanceMeters <= 100.0; // Radius toleransi 100 meter
 
         public string PhotoPath { get; set; } = string.Empty;
@@ -48,6 +52,7 @@ namespace Richikiwir.Models
             AttendanceType.Pulang => "#059669",
             AttendanceType.Izin => "#D97706",
             AttendanceType.Sakit => "#DC2626",
+            AttendanceType.Alpa => "#64748B",
             _ => "#4B5563"
         };
 

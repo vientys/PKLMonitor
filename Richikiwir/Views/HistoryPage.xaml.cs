@@ -47,6 +47,8 @@ namespace Richikiwir.Views
             ResetTabStyle(BtnTabMasuk);
             ResetTabStyle(BtnTabPulang);
             ResetTabStyle(BtnTabIzin);
+            ResetTabStyle(BtnTabSakit);
+            ResetTabStyle(BtnTabAlpa);
             ResetTabStyle(BtnTabJurnal);
 
             switch (activeFilter)
@@ -62,6 +64,12 @@ namespace Richikiwir.Views
                     break;
                 case "Izin":
                     SetSelectedTabStyle(BtnTabIzin, "#D97706");
+                    break;
+                case "Sakit":
+                    SetSelectedTabStyle(BtnTabSakit, "#DC2626");
+                    break;
+                case "Alpa":
+                    SetSelectedTabStyle(BtnTabAlpa, "#64748B");
                     break;
                 case "Jurnal":
                     SetSelectedTabStyle(BtnTabJurnal, "#7C3AED");
@@ -106,13 +114,17 @@ namespace Richikiwir.Views
             // Hitung statistik secara dinamis berdasarkan data aktual akun
             int totalDays = allList.Select(x => x.Timestamp.Date).Distinct().Count();
             int hadirCount = allList.Count(x => x.Type == AttendanceType.Masuk);
-            int izinCount = allList.Count(x => x.Type == AttendanceType.Izin || x.Type == AttendanceType.Sakit);
+            int izinCount = allList.Count(x => x.Type == AttendanceType.Izin);
+            int sakitCount = allList.Count(x => x.Type == AttendanceType.Sakit);
+            int alpaCount = allList.Count(x => x.Type == AttendanceType.Alpa);
             double rate = totalDays > 0 ? (hadirCount * 100.0 / totalDays) : 0.0;
             if (rate > 100.0) rate = 100.0;
 
             LblTotalDays.Text = totalDays.ToString();
             LblTotalHadir.Text = hadirCount.ToString();
             LblTotalIzin.Text = izinCount.ToString();
+            LblTotalSakit.Text = sakitCount.ToString();
+            LblTotalAlpa.Text = alpaCount.ToString();
             LblAttendanceRate.Text = totalDays == 0 ? "0%" : $"{rate:F1}%";
 
             if (_activeFilter == "Jurnal")
@@ -133,7 +145,11 @@ namespace Richikiwir.Views
             else if (_activeFilter == "Pulang")
                 items = items.Where(x => x.Type == AttendanceType.Pulang);
             else if (_activeFilter == "Izin")
-                items = items.Where(x => x.Type == AttendanceType.Izin || x.Type == AttendanceType.Sakit);
+                items = items.Where(x => x.Type == AttendanceType.Izin);
+            else if (_activeFilter == "Sakit")
+                items = items.Where(x => x.Type == AttendanceType.Sakit);
+            else if (_activeFilter == "Alpa")
+                items = items.Where(x => x.Type == AttendanceType.Alpa);
 
             if (!string.IsNullOrEmpty(searchText))
             {
@@ -159,7 +175,7 @@ namespace Richikiwir.Views
                         HorizontalOptions = LayoutOptions.Center,
                         Children =
                         {
-                            new Label { Text = "📋", FontSize = 36, HorizontalOptions = LayoutOptions.Center },
+                            new MaterialIcon { Icon = "event_note", IconSize = 36, IconColor = Color.FromArgb("#475569"), HorizontalOptions = LayoutOptions.Center },
                             new Label { Text = "Belum Ada Riwayat Presensi", FontSize = 13, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#475569"), HorizontalOptions = LayoutOptions.Center },
                             new Label { Text = "Riwayat presensi realtime dengan GPS dan foto akan muncul di sini.", FontSize = 11, TextColor = Color.FromArgb("#94A3B8"), HorizontalOptions = LayoutOptions.Center }
                         }
@@ -235,31 +251,61 @@ namespace Richikiwir.Views
 
             stack.Children.Add(topGrid);
 
-            // Row 2: Location & GPS Geofence details
-            var locGrid = new Grid
+            if (record.Type == AttendanceType.Masuk && record.IsLate)
             {
-                ColumnDefinitions = new ColumnDefinitionCollection
+                stack.Children.Add(new Border
                 {
-                    new ColumnDefinition { Width = 24 },
-                    new ColumnDefinition { Width = GridLength.Star }
-                }
-            };
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                    BackgroundColor = Color.FromArgb("#FEF3C7"),
+                    Padding = new Thickness(8, 5),
+                    Content = new HorizontalStackLayout
+                    {
+                        Spacing = 5,
+                        Children =
+                        {
+                            new MaterialIcon { Icon = "schedule", IconSize = 14, IconColor = Color.FromArgb("#92400E") },
+                            new Label { Text = $"Terlambat {record.LateMinutes} menit", FontSize = 11, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#92400E") }
+                        }
+                    }
+                });
+            }
 
-            locGrid.Children.Add(new Label { Text = "📍", FontSize = 14, VerticalOptions = LayoutOptions.Start });
-
-            var locStack = new VerticalStackLayout
+            var isAbsence = record.Type is AttendanceType.Izin or AttendanceType.Sakit or AttendanceType.Alpa;
+            if (isAbsence)
             {
-                Spacing = 2,
-                Children =
+                stack.Children.Add(new Label
                 {
-                    new Label { Text = record.LocationAddress, FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#334155") },
-                    new Label { Text = $"Koordinat: {record.Latitude:F5}, {record.Longitude:F5} • Radius: {record.DistanceMeters:F1}m (Batas: 100m)", FontSize = 10, TextColor = Color.FromArgb("#64748B") }
-                }
-            };
-            Grid.SetColumn(locStack, 1);
-            locGrid.Children.Add(locStack);
+                    Text = "Tidak hadir di lokasi PKL",
+                    FontSize = 11,
+                    FontAttributes = FontAttributes.Bold,
+                    TextColor = Color.FromArgb(record.TypeBadgeColor)
+                });
+            }
+            else
+            {
+                var locGrid = new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitionCollection
+                    {
+                        new ColumnDefinition { Width = 24 },
+                        new ColumnDefinition { Width = GridLength.Star }
+                    }
+                };
 
-            stack.Children.Add(locGrid);
+                locGrid.Children.Add(new MaterialIcon { Icon = "location_on", IconSize = 16, IconColor = Color.FromArgb("#475569"), VerticalOptions = LayoutOptions.Start });
+                var locStack = new VerticalStackLayout
+                {
+                    Spacing = 2,
+                    Children =
+                    {
+                        new Label { Text = record.LocationAddress, FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#334155") },
+                        new Label { Text = $"Koordinat: {record.Latitude:F5}, {record.Longitude:F5} • Radius: {record.DistanceMeters:F1}m (Batas: 100m)", FontSize = 10, TextColor = Color.FromArgb("#64748B") }
+                    }
+                };
+                Grid.SetColumn(locStack, 1);
+                locGrid.Children.Add(locStack);
+                stack.Children.Add(locGrid);
+            }
 
             // Row 3: Notes if any
             if (!string.IsNullOrWhiteSpace(record.Notes))
@@ -295,8 +341,8 @@ namespace Richikiwir.Views
                 VerticalOptions = LayoutOptions.Center,
                 Children =
                 {
-                    new Label { Text = "📸", FontSize = 11, VerticalOptions = LayoutOptions.Center },
-                    new Label { Text = "Geotag Photo Verified", FontSize = 10, TextColor = Color.FromArgb("#059669"), FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center }
+                    new MaterialIcon { Icon = isAbsence ? "info" : "photo_camera", IconSize = 13, IconColor = Color.FromArgb(isAbsence ? record.TypeBadgeColor : "#059669"), VerticalOptions = LayoutOptions.Center },
+                    new Label { Text = isAbsence ? "Status ketidakhadiran" : "Geotag Photo Verified", FontSize = 10, TextColor = Color.FromArgb(isAbsence ? record.TypeBadgeColor : "#059669"), FontAttributes = FontAttributes.Bold, VerticalOptions = LayoutOptions.Center }
                 }
             };
             bottomGrid.Children.Add(photoVerifyLabel);
@@ -376,7 +422,7 @@ namespace Richikiwir.Views
                         HorizontalOptions = LayoutOptions.Center,
                         Children =
                         {
-                            new Label { Text = "📖", FontSize = 36, HorizontalOptions = LayoutOptions.Center },
+                            new MaterialIcon { Icon = "menu_book", IconSize = 36, IconColor = Color.FromArgb("#475569"), HorizontalOptions = LayoutOptions.Center },
                             new Label { Text = "Belum Ada Jurnal Kegiatan", FontSize = 13, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#475569"), HorizontalOptions = LayoutOptions.Center },
                             new Label { Text = "Jurnal harian PKL yang Anda kirim akan tersimpan dan tampil di sini.", FontSize = 11, TextColor = Color.FromArgb("#94A3B8"), HorizontalOptions = LayoutOptions.Center }
                         }

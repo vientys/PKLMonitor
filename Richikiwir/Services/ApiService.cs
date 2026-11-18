@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -93,6 +94,27 @@ namespace Richikiwir.Services
             }
         }
 
+        public async Task<CompanyGeofence?> GetCompanyGeofenceAsync(string? identifier = null)
+        {
+            try
+            {
+                var baseUrl = await GetWorkingBaseUrlAsync();
+                var query = string.IsNullOrWhiteSpace(identifier)
+                    ? string.Empty
+                    : $"?identifier={Uri.EscapeDataString(identifier)}";
+                var response = await _httpClient.GetAsync($"{baseUrl}/api/company/geofence{query}");
+                if (!response.IsSuccessStatusCode) return null;
+
+                var rawJson = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<ApiResponseWrapper<CompanyGeofence>>(rawJson, _jsonOptions);
+                return result?.Success == true ? result.Data : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public async Task<(bool Success, string Message, UserModel? User)> LoginAsync(
             string identifier, string password, UserRole? preferredRole = null, string? jurusan = null)
         {
@@ -125,14 +147,30 @@ namespace Richikiwir.Services
             }
         }
 
+        public async Task<(bool Success, string Message)> CompleteFirstLoginAsync(
+            string fullName, string email, string phoneNumber, string newPassword)
+        {
+            var result = await SendAdminRequestAsync<object>(HttpMethod.Put, "/api/account/first-login", new
+            {
+                fullName,
+                email,
+                phoneNumber,
+                newPassword
+            });
+            return (result.Success, result.Message);
+        }
+
         public async Task<(bool Success, string Message)> SubmitAttendanceAsync(AttendanceRecord record)
         {
             try
             {
                 var baseUrl = await GetWorkingBaseUrlAsync();
-                var endpoint = record.Type == AttendanceType.Pulang 
-                    ? $"{baseUrl}/api/attendance/check-out" 
-                    : $"{baseUrl}/api/attendance/check-in";
+                var endpoint = record.Type switch
+                {
+                    AttendanceType.Pulang => $"{baseUrl}/api/attendance/check-out",
+                    AttendanceType.Izin or AttendanceType.Sakit or AttendanceType.Alpa => $"{baseUrl}/api/attendance/absence",
+                    _ => $"{baseUrl}/api/attendance/check-in"
+                };
 
                 string? photoBase64 = null;
                 if (!string.IsNullOrEmpty(record.PhotoPath) && File.Exists(record.PhotoPath))
@@ -252,11 +290,92 @@ namespace Richikiwir.Services
             return null;
         }
 
+        public async Task<(bool Success, string Message, List<UserModel> Users)> GetManagedUsersAsync()
+        {
+            var result = await SendAdminRequestAsync<List<UserModel>>(HttpMethod.Get, "/api/admin/users");
+            return (result.Success, result.Message, result.Data ?? new List<UserModel>());
+        }
+
+        public async Task<(bool Success, string Message, string TemporaryPassword)> CreateManagedUserAsync(
+            UserModel user, string? nisn, string? jurusanCode)
+        {
+            var result = await SendAdminRequestAsync<AdminUserCreationResult>(HttpMethod.Post, "/api/admin/users", new
+            {
+                fullName = user.FullName,
+                identifier = user.Identifier,
+                email = user.Email,
+                phoneNumber = user.PhoneNumber,
+                role = user.Role.ToString(),
+                nisn,
+                jurusanCode
+            });
+            return (result.Success, result.Message, result.Data?.TemporaryPassword ?? string.Empty);
+        }
+
+        public async Task<(bool Success, string Message)> UpdateManagedUserAsync(
+            UserModel user, string password, string? nisn)
+        {
+            var result = await SendAdminRequestAsync<object>(HttpMethod.Put, $"/api/admin/users/{Uri.EscapeDataString(user.Id)}", new
+            {
+                fullName = user.FullName,
+                identifier = user.Identifier,
+                password,
+                email = user.Email,
+                phoneNumber = user.PhoneNumber,
+                role = user.Role.ToString(),
+                nisn
+            });
+            return (result.Success, result.Message);
+        }
+
+        public async Task<(bool Success, string Message)> DeleteManagedUserAsync(string userId)
+        {
+            var result = await SendAdminRequestAsync<object>(HttpMethod.Delete,
+                $"/api/admin/users/{Uri.EscapeDataString(userId)}");
+            return (result.Success, result.Message);
+        }
+
+        private async Task<(bool Success, string Message, T? Data)> SendAdminRequestAsync<T>(
+            HttpMethod method, string path, object? payload = null) where T : class
+        {
+            try
+            {
+                var token = AuthService.Current.CurrentUser.AccessToken;
+                if (string.IsNullOrWhiteSpace(token))
+                    return (false, "Sesi admin tidak tersedia. Silakan keluar lalu masuk kembali.", default);
+
+                var baseUrl = await GetWorkingBaseUrlAsync();
+                using var request = new HttpRequestMessage(method, $"{baseUrl}{path}");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                if (payload != null)
+                {
+                    request.Content = new StringContent(
+                        JsonSerializer.Serialize(payload, _jsonOptions), Encoding.UTF8, "application/json");
+                }
+
+                using var response = await _httpClient.SendAsync(request);
+                var rawJson = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<ApiResponseWrapper<T>>(rawJson, _jsonOptions);
+                return (response.IsSuccessStatusCode && result?.Success == true,
+                    result?.Message ?? $"Permintaan gagal ({(int)response.StatusCode}).", result?.Data);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Gagal menghubungi server: {ex.Message}", default);
+            }
+        }
+
         private class ApiResponseWrapper<T>
         {
             public bool Success { get; set; }
             public string Message { get; set; } = string.Empty;
             public T? Data { get; set; }
+        }
+
+        private sealed class AdminUserCreationResult
+        {
+            public string Id { get; set; } = string.Empty;
+            public string TemporaryPassword { get; set; } = string.Empty;
         }
     }
 }

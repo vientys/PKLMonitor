@@ -29,10 +29,10 @@ namespace Richikiwir.Views
             _selectedRole = role;
 
             // Reset all role buttons
-            ResetButtonStyle(BtnRoleSiswa, "🎓 Siswa");
-            ResetButtonStyle(BtnRoleIndustri, "🏢 Pembimbing Industri");
-            ResetButtonStyle(BtnRoleSekolah, "🏫 Guru Sekolah");
-            ResetButtonStyle(BtnRoleAdmin, "⚙️ Admin PKL");
+            ResetButtonStyle(BtnRoleSiswa);
+            ResetButtonStyle(BtnRoleIndustri);
+            ResetButtonStyle(BtnRoleSekolah);
+            ResetButtonStyle(BtnRoleAdmin);
 
             // Highlight selected button & update info
             switch (role)
@@ -58,6 +58,7 @@ namespace Richikiwir.Views
                     LblIdentifier.Text = "NIP (Nomor Induk Pegawai Guru):";
                     TxtIdentifier.Placeholder = "Masukkan 18 digit NIP Guru";
                     LayoutJurusanPicker.IsVisible = false;
+                    TxtIdentifier.Placeholder = "Masukkan NIP Guru atau Email";
                     break;
                 case UserRole.Admin:
                     SetSelectedButtonStyle(BtnRoleAdmin, "#DC2626");
@@ -69,21 +70,50 @@ namespace Richikiwir.Views
             }
         }
 
-        private void ResetButtonStyle(Button btn, string text)
+        private void ResetButtonStyle(Button btn)
         {
             btn.BackgroundColor = Color.FromArgb("#F1F5F9");
             btn.TextColor = Color.FromArgb("#475569");
+            SetRoleButtonIcon(btn, Color.FromArgb("#475569"));
         }
 
         private void SetSelectedButtonStyle(Button btn, string hexColor)
         {
             btn.BackgroundColor = Color.FromArgb(hexColor);
             btn.TextColor = Colors.White;
+            SetRoleButtonIcon(btn, Colors.White);
+        }
+
+        private static void SetRoleButtonIcon(Button btn, Color color)
+        {
+            var glyph = btn.CommandParameter?.ToString() switch
+            {
+                "Siswa" => "school",
+                "PembimbingIndustri" => "business",
+                "PembimbingSekolah" => "co_present",
+                "Admin" => "settings",
+                _ => "person"
+            };
+
+            btn.ImageSource = new FontImageSource
+            {
+                FontFamily = "MaterialSymbols",
+                Glyph = glyph,
+                Size = 16,
+                Color = color
+            };
         }
 
         private void OnTogglePasswordClicked(object? sender, EventArgs e)
         {
             TxtPassword.IsPassword = !TxtPassword.IsPassword;
+            BtnTogglePassword.ImageSource = new FontImageSource
+            {
+                FontFamily = "MaterialSymbols",
+                Glyph = TxtPassword.IsPassword ? "visibility" : "visibility_off",
+                Size = 18,
+                Color = Color.FromArgb("#64748B")
+            };
         }
 
         private async void OnLoginClicked(object? sender, EventArgs e)
@@ -121,10 +151,12 @@ namespace Richikiwir.Views
                     return;
                 }
 
-                // Arahkan ke dashboard utama setelah autentikasi berhasil
                 if (Application.Current?.Windows.Count > 0)
                 {
-                    Application.Current.Windows[0].Page = new AppShell();
+                    var user = AuthService.Current.CurrentUser;
+                    Application.Current.Windows[0].Page = user.MustCompleteProfile || user.MustChangePassword
+                        ? new NavigationPage(new FirstLoginSetupPage())
+                        : new AppShell();
                 }
             }
             finally

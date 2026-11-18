@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Richikiwir.Views"
              x:Class="Richikiwir.Views.SettingPage"
              BackgroundColor="{StaticResource AppBackground}"
              Title="Setting">
@@ -38,25 +39,25 @@
                     <!-- Rincian Lembaga & Kontak -->
                     <VerticalStackLayout Spacing="8">
                         <Grid ColumnDefinitions="24,*,Auto">
-                            <Label Text="🏫" FontSize="13" VerticalOptions="Center" />
+                            <controls:MaterialIcon Icon="school" IconSize="15" IconColor="{StaticResource Gray600}" />
                             <Label Grid.Column="1" Text="Asal Sekolah" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
                             <Label x:Name="LblProfileSchool" Grid.Column="2" Text="SMK Negeri 1 Rekayasa Teknologi" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource Gray800}" VerticalOptions="Center" />
                         </Grid>
 
                         <Grid ColumnDefinitions="24,*,Auto">
-                            <Label Text="🏢" FontSize="13" VerticalOptions="Center" />
+                            <controls:MaterialIcon Icon="business" IconSize="15" IconColor="{StaticResource Gray600}" />
                             <Label Grid.Column="1" Text="Mitra DU/DI" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
                             <Label x:Name="LblProfileCompany" Grid.Column="2" Text="PT Solusi Digital Nusantara" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource Gray800}" VerticalOptions="Center" />
                         </Grid>
 
                         <Grid ColumnDefinitions="24,*,Auto">
-                            <Label Text="📚" FontSize="13" VerticalOptions="Center" />
+                            <controls:MaterialIcon Icon="menu_book" IconSize="15" IconColor="{StaticResource Gray600}" />
                             <Label Grid.Column="1" Text="Kompetensi" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
                             <Label x:Name="LblProfileMajor" Grid.Column="2" Text="XII Rekayasa Perangkat Lunak 1" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource Gray800}" VerticalOptions="Center" />
                         </Grid>
 
                         <Grid ColumnDefinitions="24,*,Auto">
-                            <Label Text="✉️" FontSize="13" VerticalOptions="Center" />
+                            <controls:MaterialIcon Icon="mail" IconSize="15" IconColor="{StaticResource Gray600}" />
                             <Label Grid.Column="1" Text="Email" FontSize="11" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
                             <Label x:Name="LblProfileEmail" Grid.Column="2" Text="rizky.rpl@smkn1pkl.sch.id" FontSize="11" FontAttributes="Bold" TextColor="{StaticResource PrimaryLight}" VerticalOptions="Center" />
                         </Grid>
@@ -64,7 +65,14 @@
                 </VerticalStackLayout>
             </Border>
 
-
+            <Button x:Name="BtnManageAccounts" Text="Kelola akun pengguna" IsVisible="False"
+                    FontAttributes="Bold" FontSize="13" BackgroundColor="{StaticResource Primary}"
+                    TextColor="White" HeightRequest="46" CornerRadius="10"
+                    Clicked="OnManageAccountsClicked">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="MaterialSymbols" Glyph="manage_accounts" Size="18" Color="White" />
+                </Button.ImageSource>
+            </Button>
 
             <!-- Card Pengaturan Presensi & Notifikasi -->
             <Border StrokeShape="RoundRectangle 16" Stroke="{StaticResource BorderLight}" StrokeThickness="1" 
@@ -108,22 +116,34 @@
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Bantuan &amp; Informasi BKK PKL" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
 
-                    <Button Text="📄 Unduh Buku Panduan &amp; SOP PKL 2026" FontSize="11" FontAttributes="Bold" 
+                    <Button Text="Unduh Buku Panduan &amp; SOP PKL 2026" FontSize="11" FontAttributes="Bold" 
                             BackgroundColor="#F1F5F9" TextColor="{StaticResource Primary}" HeightRequest="38" CornerRadius="8"
-                            Clicked="OnDownloadSopClicked" />
+                            Clicked="OnDownloadSopClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="MaterialSymbols" Glyph="description" Size="16" Color="#2563EB" />
+                        </Button.ImageSource>
+                    </Button>
 
-                    <Button Text="📞 Hubungi Panitia BKK / Call Center Sekolah" FontSize="11" FontAttributes="Bold" 
+                    <Button Text="Hubungi Panitia BKK / Call Center Sekolah" FontSize="11" FontAttributes="Bold" 
                             BackgroundColor="#F1F5F9" TextColor="{StaticResource Gray800}" HeightRequest="38" CornerRadius="8"
-                            Clicked="OnContactCenterClicked" />
+                            Clicked="OnContactCenterClicked">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="MaterialSymbols" Glyph="call" Size="16" Color="#475569" />
+                        </Button.ImageSource>
+                    </Button>
                 </VerticalStackLayout>
             </Border>
 
             <!-- Tombol Keluar (Logout) -->
-            <Button Text="🚪 Keluar dari Akun (Logout)" 
+            <Button Text="Keluar dari Akun (Logout)" 
                     FontAttributes="Bold" FontSize="13" 
                     BackgroundColor="#FEE2E2" TextColor="#DC2626" 
                     HeightRequest="46" CornerRadius="12"
-                    Clicked="OnLogoutClicked" />
+                    Clicked="OnLogoutClicked">
+                <Button.ImageSource>
+                    <FontImageSource FontFamily="MaterialSymbols" Glyph="logout" Size="18" Color="#DC2626" />
+                </Button.ImageSource>
+            </Button>
 
             <Label Text="SIM-PKL Mobile v2.5.0 • Build 2026.10&#10;SMK Negeri 1 Rekayasa &amp; Teknologi" 
                    FontSize="10" TextColor="{StaticResource Gray400}" HorizontalTextAlignment="Center" Margin="0,4,0,24" />

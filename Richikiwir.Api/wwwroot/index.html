@@ -6,7 +6,10 @@
     <title>Pusat Monitoring Database PKL &amp; Presensi Mobile</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --primary: #1E3A8A;
@@ -36,7 +39,24 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: inherit;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-flex;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            vertical-align: middle;
         }
 
         body {
@@ -410,6 +430,7 @@
 
         .badge-radius-ok { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
         .badge-radius-out { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+        .badge-late { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
 
         .badge-role-siswa { background: #E0F2FE; color: #0369A1; }
         .badge-role-industri { background: #DCFCE7; color: #166534; }
@@ -642,6 +663,67 @@
             border-radius: 0 6px 6px 0;
             line-height: 1.5;
         }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px;
+        }
+
+        .settings-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: var(--gray-700);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .settings-field input,
+        .settings-field select,
+        .settings-field textarea {
+            width: 100%;
+            min-height: 40px;
+            padding: 9px 11px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            background: white;
+            color: var(--gray-900);
+            font: 400 13px 'Inter', sans-serif;
+        }
+
+        .settings-field textarea {
+            min-height: 76px;
+            resize: vertical;
+        }
+
+        .settings-map {
+            height: 380px;
+            margin-top: 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .settings-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .settings-message {
+            min-height: 20px;
+            margin-top: 10px;
+            color: var(--gray-600);
+            font-size: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .settings-map { height: 300px; }
+        }
     </style>
 </head>
 <body>
@@ -655,7 +737,11 @@
                     <h1 class="brand-title">SMKN 5 KAB. TANGERANG • Monitoring Presensi PKL</h1>
                     <div class="brand-subtitle">
                         <span class="server-status-pill"></span>
+<<<<<<< HEAD
                         <span>API Online • Terhubung Database SQLite (Normalisasi 3NF)</span>
+=======
+                        
+>>>>>>> fff0924bb90534f8c1eb2388273481ee5c3436ab
                     </div>
                 </div>
             </div>
@@ -666,7 +752,7 @@
                     <label for="chkAutoRefresh" style="cursor: pointer;">Auto Refresh (5s)</label>
                 </div>
                 <button class="btn-refresh" onclick="refreshAllData()">
-                    🔄 Segarkan Data
+                    <span class="material-symbols-outlined" aria-hidden="true">refresh</span> Segarkan Data
                 </button>
             </div>
         </div>
@@ -677,7 +763,7 @@
         <!-- Top Metrics Cards -->
         <div class="metrics-grid">
             <div class="metric-card">
-                <div class="metric-icon" style="background: var(--primary-50); color: var(--primary-light);">👥</div>
+                <div class="metric-icon" style="background: var(--primary-50); color: var(--primary-light);"><span class="material-symbols-outlined" aria-hidden="true">group</span></div>
                 <div>
                     <div class="metric-number" id="metricTotalUsers">0</div>
                     <div class="metric-label">Total Akun Terdaftar</div>
@@ -685,7 +771,7 @@
             </div>
 
             <div class="metric-card">
-                <div class="metric-icon" style="background: var(--success-50); color: var(--success);">📍</div>
+                <div class="metric-icon" style="background: var(--success-50); color: var(--success);"><span class="material-symbols-outlined" aria-hidden="true">location_on</span></div>
                 <div>
                     <div class="metric-number" id="metricTodayAtt">0</div>
                     <div class="metric-label">Presensi Hari Ini</div>
@@ -693,7 +779,7 @@
             </div>
 
             <div class="metric-card">
-                <div class="metric-icon" style="background: var(--purple-50); color: var(--purple);">📖</div>
+                <div class="metric-icon" style="background: var(--purple-50); color: var(--purple);"><span class="material-symbols-outlined" aria-hidden="true">menu_book</span></div>
                 <div>
                     <div class="metric-number" id="metricTotalLogs">0</div>
                     <div class="metric-label">Total Jurnal Harian</div>
@@ -701,10 +787,18 @@
             </div>
 
             <div class="metric-card">
-                <div class="metric-icon" style="background: var(--warning-50); color: var(--warning);">⏳</div>
+                <div class="metric-icon" style="background: var(--warning-50); color: var(--warning);"><span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span></div>
                 <div>
                     <div class="metric-number" id="metricPendingAtt">0</div>
                     <div class="metric-label">Menunggu Verifikasi</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon" style="background: #FEF3C7; color: #B45309;"><span class="material-symbols-outlined" aria-hidden="true">schedule</span></div>
+                <div>
+                    <div class="metric-number" id="metricLateAtt">0</div>
+                    <div class="metric-label">Terlambat Hari Ini</div>
                 </div>
             </div>
         </div>
@@ -712,23 +806,26 @@
         <!-- Navigation Tabs -->
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('tab-absensi', this)">
-                📸 Monitoring Absensi
+                <span class="material-symbols-outlined" aria-hidden="true">photo_camera</span> Monitoring Absensi
                 <span class="tab-badge" id="badgeCountAtt">0</span>
             </button>
             <button class="tab-btn" onclick="switchTab('tab-jurusan', this)">
-                📁 Direktori 10 Jurusan
+                <span class="material-symbols-outlined" aria-hidden="true">folder_open</span> Direktori 10 Jurusan
                 <span class="tab-badge">10</span>
             </button>
             <button class="tab-btn" onclick="switchTab('tab-akun', this)">
-                👥 Database Akun
+                <span class="material-symbols-outlined" aria-hidden="true">group</span> Database Akun
                 <span class="tab-badge" id="badgeCountUsers">0</span>
             </button>
             <button class="tab-btn" onclick="switchTab('tab-jurnal', this)">
-                📖 Jurnal Logbook
+                <span class="material-symbols-outlined" aria-hidden="true">menu_book</span> Jurnal Logbook
                 <span class="tab-badge" id="badgeCountLogs">0</span>
             </button>
+            <button class="tab-btn" onclick="switchTab('tab-settings', this)">
+                <span class="material-symbols-outlined" aria-hidden="true">domain</span> Pengaturan Mitra
+            </button>
             <button class="tab-btn" onclick="switchTab('tab-server', this)">
-                ⚡ Status 3NF &amp; Server
+                <span class="material-symbols-outlined" aria-hidden="true">dns</span> Status 3NF &amp; Server
             </button>
         </div>
 
@@ -740,7 +837,7 @@
                 <div class="content-header">
                     <div>
                         <div class="content-title">
-                            <span>📍 Data Presensi Realtime dari Aplikasi Mobile</span>
+                            <span><span class="material-symbols-outlined" aria-hidden="true">location_on</span> Data Presensi Realtime dari Aplikasi Mobile</span>
                         </div>
                         <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
                             Memantau foto bukti kehadiran, koordinat GPS geotag, toleransi radius geofence (100m), dan status persetujuan mentor.
@@ -770,17 +867,17 @@
                 <div style="margin-bottom: 14px;">
                     <div style="font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; text-transform: uppercase;">Direktori Jurusan:</div>
                     <div class="role-chips" id="jurusanChipsAtt">
-                        <button class="role-chip active" onclick="filterJurusan('ALL', this)">📁 Semua Jurusan</button>
-                        <button class="role-chip" onclick="filterJurusan('RPL', this)">💻 RPL</button>
-                        <button class="role-chip" onclick="filterJurusan('DKV', this)">🎨 DKV</button>
-                        <button class="role-chip" onclick="filterJurusan('PH', this)">🏨 PH</button>
-                        <button class="role-chip" onclick="filterJurusan('TKJ', this)">🌐 TKJ</button>
-                        <button class="role-chip" onclick="filterJurusan('TSM', this)">🏍️ TSM</button>
-                        <button class="role-chip" onclick="filterJurusan('TKR', this)">🚗 TKR</button>
-                        <button class="role-chip" onclick="filterJurusan('TPM', this)">⚙️ TPM</button>
-                        <button class="role-chip" onclick="filterJurusan('MP', this)">📑 MP</button>
-                        <button class="role-chip" onclick="filterJurusan('AK', this)">💰 AK</button>
-                        <button class="role-chip" onclick="filterJurusan('APHPI', this)">🐟 APHPI</button>
+                        <button class="role-chip active" onclick="filterJurusan('ALL', this)"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span> Semua Jurusan</button>
+                        <button class="role-chip" onclick="filterJurusan('RPL', this)"><span class="material-symbols-outlined" aria-hidden="true">code</span> RPL</button>
+                        <button class="role-chip" onclick="filterJurusan('DKV', this)"><span class="material-symbols-outlined" aria-hidden="true">palette</span> DKV</button>
+                        <button class="role-chip" onclick="filterJurusan('PH', this)"><span class="material-symbols-outlined" aria-hidden="true">hotel</span> PH</button>
+                        <button class="role-chip" onclick="filterJurusan('TKJ', this)"><span class="material-symbols-outlined" aria-hidden="true">language</span> TKJ</button>
+                        <button class="role-chip" onclick="filterJurusan('TSM', this)"><span class="material-symbols-outlined" aria-hidden="true">two_wheeler</span> TSM</button>
+                        <button class="role-chip" onclick="filterJurusan('TKR', this)"><span class="material-symbols-outlined" aria-hidden="true">directions_car</span> TKR</button>
+                        <button class="role-chip" onclick="filterJurusan('TPM', this)"><span class="material-symbols-outlined" aria-hidden="true">settings</span> TPM</button>
+                        <button class="role-chip" onclick="filterJurusan('MP', this)"><span class="material-symbols-outlined" aria-hidden="true">description</span> MP</button>
+                        <button class="role-chip" onclick="filterJurusan('AK', this)"><span class="material-symbols-outlined" aria-hidden="true">payments</span> AK</button>
+                        <button class="role-chip" onclick="filterJurusan('APHPI', this)"><span class="material-symbols-outlined" aria-hidden="true">set_meal</span> APHPI</button>
                     </div>
                 </div>
 
@@ -797,7 +894,7 @@
             <div class="content-card">
                 <div class="content-header">
                     <div>
-                        <div class="content-title">📁 Direktori 10 Jurusan Resmi SMKN 5 Kab. Tangerang</div>
+                        <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span> Direktori 10 Jurusan Resmi SMKN 5 Kab. Tangerang</div>
                         <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
                             Penyimpanan akun, presensi, dan data jurnal PKL terpartisi otomatis per direktori jurusan fisik (storage/jurusan/{KODE}/).
                         </p>
@@ -817,17 +914,102 @@
             <div class="content-card">
                 <div class="content-header">
                     <div>
-                        <div class="content-title">👥 Daftar Akun &amp; Siswa PKL</div>
+                        <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">group</span> Daftar Akun &amp; Siswa PKL</div>
                         <p style="font-size: 12px; color: var(--gray-600); margin-top: 2px;">
+<<<<<<< HEAD
                             Menampilkan direktori siswa dan akun pengguna (Siswa PKL, Pembimbing Industri, Guru, Admin) tersimpan dalam sistem 3NF.
+=======
+                            Menampilkan seluruh akun untuk setiap role (Siswa, Pembimbing Industri, Guru Pembimbing, Admin).
+>>>>>>> fff0924bb90534f8c1eb2388273481ee5c3436ab
                         </p>
                     </div>
 
                     <!-- Search Filter Control -->
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                        <input type="text" id="searchUsers" placeholder="🔍 Cari Siswa, NIS, Jurusan, Kelas..." 
+                        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                        <input type="text" id="searchUsers" placeholder="Cari Siswa, NIS, Jurusan, Kelas..." 
                                oninput="onSearchUsers()" 
                                style="padding: 7px 12px; font-size: 12px; border: 1px solid var(--gray-300); border-radius: 8px; outline: none; min-width: 260px;">
+                    </div>
+                </div>
+
+                <div class="content-card" id="accountAdminPanel" style="margin-bottom: 16px;">
+                    <div id="accountAdminLogin">
+                        <div class="content-header">
+                            <div>
+                                <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span> Aksi Admin Akun</div>
+                                <p style="font-size: 12px; color: var(--gray-600); margin-top: 3px;">Masuk sebagai admin untuk menambah, mengubah, menghapus, atau mengimpor akun.</p>
+                            </div>
+                        </div>
+                        <form onsubmit="loginAccountAdmin(event)" class="settings-grid">
+                            <label class="settings-field">Username admin
+                                <input id="accountAdminUsername" autocomplete="username" required>
+                            </label>
+                            <label class="settings-field">Kata sandi
+                                <input id="accountAdminPassword" type="password" autocomplete="current-password" required>
+                            </label>
+                            <div class="settings-actions" style="align-self: end; margin-top: 0;">
+                                <button class="btn-action btn-approve" type="submit"><span class="material-symbols-outlined" aria-hidden="true">login</span> Masuk Admin</button>
+                            </div>
+                        </form>
+                        <div class="settings-message" id="accountAdminLoginMessage" role="status"></div>
+                    </div>
+
+                    <div id="accountAdminTools" style="display: none;">
+                        <div class="content-header">
+                            <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">manage_accounts</span> Kelola Akun</div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-action" id="btnEnableAttendanceNotifications" type="button" onclick="requestAdminNotificationPermission()"><span class="material-symbols-outlined" aria-hidden="true">notifications_active</span> Aktifkan Notifikasi</button>
+                                <button class="btn-action" type="button" onclick="logoutCompanySettings()"><span class="material-symbols-outlined" aria-hidden="true">logout</span> Keluar Admin</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                            <button class="btn-action btn-approve" type="button" onclick="openAccountEditor()"><span class="material-symbols-outlined" aria-hidden="true">person_add</span> Tambah Akun</button>
+                            <button class="btn-action" type="button" onclick="downloadUserImportTemplate()"><span class="material-symbols-outlined" aria-hidden="true">download</span> Unduh Template Excel</button>
+                            <label class="btn-action" for="accountImportFile" style="cursor: pointer;"><span class="material-symbols-outlined" aria-hidden="true">upload_file</span> Pilih Excel</label>
+                            <input id="accountImportFile" type="file" accept=".xlsx,.xls,.csv" onchange="previewAccountImport(event)" style="display: none;">
+                            <button class="btn-action btn-approve" id="btnImportAccounts" type="button" onclick="importUserAccounts()" disabled><span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span> Impor Akun</button>
+                        </div>
+                        <div id="accountImportPreview" style="margin-top: 12px;"></div>
+                        <div class="settings-message" id="accountAdminMessage" role="status"></div>
+                        <div class="content-card" id="accountEditor" style="display: none; margin-top: 14px;">
+                            <div class="content-title" id="accountEditorTitle">Tambah Akun</div>
+                            <form onsubmit="saveAdminAccount(event)" class="settings-grid" style="margin-top: 12px;">
+                                <label class="settings-field">Nama lengkap
+                                    <input id="editorFullName" required maxlength="150">
+                                </label>
+                                <label class="settings-field">Identitas login
+                                    <input id="editorIdentifier" required maxlength="50">
+                                </label>
+                                <label class="settings-field" id="editorPasswordField" style="display: none;">Kata sandi baru (opsional saat edit)
+                                    <input id="editorPassword" type="password" minlength="8" autocomplete="new-password">
+                                </label>
+                                <label class="settings-field">Role
+                                    <select id="editorRole" required>
+                                        <option value="Siswa">Siswa</option>
+                                        <option value="PembimbingIndustri">Pembimbing Industri</option>
+                                        <option value="PembimbingSekolah">Guru Pembimbing</option>
+                                        <option value="Admin">Administrator</option>
+                                    </select>
+                                </label>
+                                <label class="settings-field">Email
+                                    <input id="editorEmail" type="email" maxlength="150">
+                                </label>
+                                <label class="settings-field">Nomor telepon
+                                    <input id="editorPhone" type="tel" maxlength="40">
+                                </label>
+                                <label class="settings-field">NISN (khusus siswa)
+                                    <input id="editorNisn" maxlength="20">
+                                </label>
+                                <label class="settings-field">Kode jurusan (khusus siswa)
+                                    <input id="editorJurusanCode" maxlength="10" placeholder="RPL, DKV, TKJ...">
+                                </label>
+                                <div class="settings-actions" style="grid-column: 1 / -1;">
+                                    <button class="btn-action btn-approve" type="submit"><span class="material-symbols-outlined" aria-hidden="true">save</span> Simpan Akun</button>
+                                    <button class="btn-action" type="button" onclick="closeAccountEditor()">Batal</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -835,27 +1017,27 @@
                 <div style="margin-bottom: 10px;">
                     <div style="font-size: 11px; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; text-transform: uppercase;">Filter Direktori Jurusan:</div>
                     <div class="role-chips" id="jurusanChipsAkun">
-                        <button class="role-chip active" onclick="filterJurusanAkun('ALL', this)">📁 Semua Jurusan</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('RPL', this)">💻 RPL</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('DKV', this)">🎨 DKV</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('PH', this)">🏨 PH</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('TKJ', this)">🌐 TKJ</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('TSM', this)">🏍️ TSM</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('TKR', this)">🚗 TKR</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('TPM', this)">⚙️ TPM</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('MP', this)">📑 MP</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('AK', this)">💰 AK</button>
-                        <button class="role-chip" onclick="filterJurusanAkun('APHPI', this)">🐟 APHPI</button>
+                        <button class="role-chip active" onclick="filterJurusanAkun('ALL', this)"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span> Semua Jurusan</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('RPL', this)"><span class="material-symbols-outlined" aria-hidden="true">code</span> RPL</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('DKV', this)"><span class="material-symbols-outlined" aria-hidden="true">palette</span> DKV</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('PH', this)"><span class="material-symbols-outlined" aria-hidden="true">hotel</span> PH</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TKJ', this)"><span class="material-symbols-outlined" aria-hidden="true">language</span> TKJ</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TSM', this)"><span class="material-symbols-outlined" aria-hidden="true">two_wheeler</span> TSM</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TKR', this)"><span class="material-symbols-outlined" aria-hidden="true">directions_car</span> TKR</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('TPM', this)"><span class="material-symbols-outlined" aria-hidden="true">settings</span> TPM</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('MP', this)"><span class="material-symbols-outlined" aria-hidden="true">description</span> MP</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('AK', this)"><span class="material-symbols-outlined" aria-hidden="true">payments</span> AK</button>
+                        <button class="role-chip" onclick="filterJurusanAkun('APHPI', this)"><span class="material-symbols-outlined" aria-hidden="true">set_meal</span> APHPI</button>
                     </div>
                 </div>
 
                 <!-- Role Filter Chips -->
                 <div class="role-chips" id="roleChipsAkun">
                     <button class="role-chip active" onclick="filterUsersRole('ALL', this)">Semua Role</button>
-                    <button class="role-chip" onclick="filterUsersRole('Siswa', this)">🎓 Siswa PKL</button>
-                    <button class="role-chip" onclick="filterUsersRole('PembimbingIndustri', this)">🏢 Pembimbing Industri (DU/DI)</button>
-                    <button class="role-chip" onclick="filterUsersRole('PembimbingSekolah', this)">🏫 Guru Pembimbing</button>
-                    <button class="role-chip" onclick="filterUsersRole('Admin', this)">⚙️ Administrator</button>
+                    <button class="role-chip" onclick="filterUsersRole('Siswa', this)"><span class="material-symbols-outlined" aria-hidden="true">school</span> Siswa PKL</button>
+                    <button class="role-chip" onclick="filterUsersRole('PembimbingIndustri', this)"><span class="material-symbols-outlined" aria-hidden="true">business</span> Pembimbing Industri (DU/DI)</button>
+                    <button class="role-chip" onclick="filterUsersRole('PembimbingSekolah', this)"><span class="material-symbols-outlined" aria-hidden="true">co_present</span> Guru Pembimbing</button>
+                    <button class="role-chip" onclick="filterUsersRole('Admin', this)"><span class="material-symbols-outlined" aria-hidden="true">settings</span> Administrator</button>
                 </div>
 
                 <div class="table-wrap">
@@ -870,6 +1052,7 @@
                                 <th>Perusahaan / Mitra DU/DI</th>
                                 <th>Status Riwayat</th>
                                 <th>Email / Kontak</th>
+                                <th>Aksi Admin</th>
                             </tr>
                         </thead>
                         <tbody id="userTableBody">
@@ -925,13 +1108,97 @@
             </div>
         </div>
 
+        <div id="tab-settings" style="display: none;">
+            <div class="content-card" id="companySettingsLogin">
+                <div class="content-header">
+                    <div>
+                        <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span> Akses Admin</div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 3px;">Masuk dengan akun administrator untuk mengubah data perusahaan dan lokasi presensi.</p>
+                    </div>
+                </div>
+                <form onsubmit="loginCompanySettings(event)" class="settings-grid">
+                    <label class="settings-field">Username admin
+                        <input id="settingsAdminUsername" autocomplete="username" required>
+                    </label>
+                    <label class="settings-field">Kata sandi
+                        <input id="settingsAdminPassword" type="password" autocomplete="current-password" required>
+                    </label>
+                    <div class="settings-actions" style="align-self: end; margin-top: 0;">
+                        <button class="btn-action btn-approve" type="submit"><span class="material-symbols-outlined" aria-hidden="true">login</span> Masuk</button>
+                    </div>
+                </form>
+                <div class="settings-message" id="companySettingsLoginMessage" role="status"></div>
+            </div>
+
+            <div class="content-card" id="companySettingsPanel" style="display: none;">
+                <div class="content-header">
+                    <div>
+                        <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">domain</span> Data Perusahaan &amp; Lokasi Presensi</div>
+                        <p style="font-size: 12px; color: var(--gray-600); margin-top: 3px;">Atur profil mitra, jam operasional, titik kantor, dan radius validasi GPS.</p>
+                    </div>
+                    <button class="btn-action" type="button" onclick="logoutCompanySettings()"><span class="material-symbols-outlined" aria-hidden="true">logout</span> Keluar Admin</button>
+                </div>
+
+                <form id="companySettingsForm" onsubmit="saveCompanySettings(event)">
+                    <div class="settings-grid">
+                        <label class="settings-field">Pilih perusahaan
+                            <select id="settingsCompanySelect" onchange="selectCompanySettings()"></select>
+                        </label>
+                        <label class="settings-field">Nama perusahaan
+                            <input id="settingsCompanyName" required maxlength="150">
+                        </label>
+                        <label class="settings-field">Bidang usaha
+                            <input id="settingsCompanyIndustry" maxlength="150">
+                        </label>
+                        <label class="settings-field">Kontak person
+                            <input id="settingsCompanyContact" maxlength="150">
+                        </label>
+                        <label class="settings-field">Nomor telepon
+                            <input id="settingsCompanyPhone" type="tel" maxlength="40">
+                        </label>
+                        <label class="settings-field">Jam masuk
+                            <input id="settingsWorkStart" type="time" required>
+                        </label>
+                        <label class="settings-field">Jam pulang
+                            <input id="settingsWorkEnd" type="time" required>
+                        </label>
+                        <label class="settings-field" style="grid-column: 1 / -1;">Alamat kantor
+                            <textarea id="settingsCompanyAddress" required maxlength="300"></textarea>
+                        </label>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 22px;">
+                        <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">location_on</span> Titik Presensi</div>
+                        <button class="btn-action" type="button" onclick="useCurrentMapLocation()"><span class="material-symbols-outlined" aria-hidden="true">my_location</span> Gunakan Lokasi Saya</button>
+                    </div>
+                    <div id="companySettingsMap" class="settings-map" aria-label="Peta pemilihan titik kantor"></div>
+
+                    <div class="settings-grid" style="margin-top: 14px;">
+                        <label class="settings-field">Latitude
+                            <input id="settingsLatitude" type="number" step="0.0000001" min="-90" max="90" required oninput="syncCompanyMapFromInputs()">
+                        </label>
+                        <label class="settings-field">Longitude
+                            <input id="settingsLongitude" type="number" step="0.0000001" min="-180" max="180" required oninput="syncCompanyMapFromInputs()">
+                        </label>
+                        <label class="settings-field">Radius absensi (meter)
+                            <input id="settingsRadius" type="number" step="1" min="1" max="5000" required oninput="syncCompanyMapRadius()">
+                        </label>
+                    </div>
+                    <div class="settings-actions">
+                        <button class="btn-action btn-approve" id="btnSaveCompanySettings" type="submit"><span class="material-symbols-outlined" aria-hidden="true">save</span> Simpan Pengaturan</button>
+                        <span class="settings-message" id="companySettingsMessage" role="status"></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- ========================================== -->
         <!-- TAB 4: STATUS SERVER & DATABASE           -->
         <!-- ========================================== -->
         <div id="tab-server" style="display: none;">
             <div class="content-card">
                 <div class="content-header">
-                    <div class="content-title">⚡ Informasi Teknis Server &amp; Database SQLite</div>
+                    <div class="content-title"><span class="material-symbols-outlined" aria-hidden="true">dns</span> Informasi Teknis Server &amp; Database SQLite</div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
@@ -969,6 +1236,38 @@
 
     </div>
 
+    <div class="modal" id="firstLoginSetupModal" role="dialog" aria-modal="true" aria-labelledby="firstLoginSetupTitle" style="display: none;">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span id="firstLoginSetupTitle" style="font-size: 15px; font-weight: 700;">Selesaikan Setup Akun</span>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 12px; color: var(--gray-600); margin-bottom: 14px;">Lengkapi profil dan ganti kata sandi sementara sebelum melanjutkan.</p>
+                <form onsubmit="submitFirstLoginSetup(event)" class="settings-grid">
+                    <label class="settings-field">Nama lengkap
+                        <input id="firstLoginFullName" required maxlength="150">
+                    </label>
+                    <label class="settings-field">Email aktif
+                        <input id="firstLoginEmail" type="email" required maxlength="150">
+                    </label>
+                    <label class="settings-field">Nomor telepon aktif
+                        <input id="firstLoginPhone" type="tel" required maxlength="40">
+                    </label>
+                    <label class="settings-field">Kata sandi baru
+                        <input id="firstLoginNewPassword" type="password" required minlength="8" autocomplete="new-password">
+                    </label>
+                    <label class="settings-field">Ulangi kata sandi baru
+                        <input id="firstLoginConfirmPassword" type="password" required minlength="8" autocomplete="new-password">
+                    </label>
+                    <div class="settings-actions" style="grid-column: 1 / -1;">
+                        <button class="btn-action btn-approve" id="btnFirstLoginSetup" type="submit"><span class="material-symbols-outlined" aria-hidden="true">save</span> Simpan dan Lanjutkan</button>
+                        <span class="settings-message" id="firstLoginSetupMessage" role="status"></span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Detail Foto & Geotag -->
     <div class="modal" id="photoModal" onclick="closePhotoModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -982,7 +1281,7 @@
                     <!-- Dynamic Watermark Content -->
                 </div>
                 <div style="margin-top: 14px; text-align: right;">
-                    <button class="btn-action btn-approve" id="btnModalApprove" onclick="approveFromModal()">✓ Setujui Presensi Ini</button>
+                    <button class="btn-action btn-approve" id="btnModalApprove" onclick="approveFromModal()"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span> Setujui Presensi Ini</button>
                     <button class="btn-action" style="background: var(--gray-200); color: var(--gray-800);" onclick="closePhotoModal()">Tutup</button>
                 </div>
             </div>
@@ -990,6 +1289,11 @@
     </div>
 
     <script>
+        function materialIcon(name, extraClass = '') {
+            const className = extraClass ? `material-symbols-outlined ${extraClass}` : 'material-symbols-outlined';
+            return `<span class="${className}" aria-hidden="true">${name}</span>`;
+        }
+
         let rawAttendances = [];
         let rawUsers = [];
         let rawLogbooks = [];
@@ -1002,6 +1306,25 @@
         let userCurrentPage = 1;
         let userPageSize = 10;
         let userSearchQuery = '';
+        const openAccountEditorOriginal = openAccountEditor;
+        openAccountEditor = id => {
+            openAccountEditorOriginal(id);
+            document.getElementById('editorPasswordField').style.display = id ? 'flex' : 'none';
+        };
+        let companySettingsToken = sessionStorage.getItem('companySettingsToken') || '';
+        let companySettingsList = [];
+        let companyMap = null;
+        let companyMarker = null;
+        let companyRadiusCircle = null;
+        let adminUserId = sessionStorage.getItem('adminUserId') || '';
+        let editingAccountId = null;
+        let accountImportRows = [];
+        let pendingFirstLoginToken = '';
+        let pendingFirstLoginUser = null;
+        let firstLoginReturnTab = 'tab-akun';
+        let attendanceBaselineInitialized = false;
+        let seenAttendanceIds = new Set();
+        let adminAttendanceNotificationsEnabled = sessionStorage.getItem('adminAttendanceNotificationsEnabled') === 'true';
 
         // Auto Refresh Timer
         function setupAutoRefresh() {
@@ -1018,7 +1341,7 @@
 
         function switchTab(tabId, el) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            ['tab-absensi', 'tab-jurusan', 'tab-akun', 'tab-jurnal', 'tab-server'].forEach(id => {
+            ['tab-absensi', 'tab-jurusan', 'tab-akun', 'tab-jurnal', 'tab-settings', 'tab-server'].forEach(id => {
                 const target = document.getElementById(id);
                 if (target) target.style.display = 'none';
             });
@@ -1031,6 +1354,785 @@
             } else {
                 const matchedBtn = document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
                 if (matchedBtn) matchedBtn.classList.add('active');
+            }
+
+            if (tabId === 'tab-settings') {
+                showCompanySettingsAccess();
+                if (companySettingsToken) loadCompanySettings();
+            }
+            if (tabId === 'tab-akun') {
+                showAccountAdminAccess();
+                if (companySettingsToken) loadAdminAccountList();
+            }
+        }
+
+        function showCompanySettingsAccess() {
+            const isAuthenticated = Boolean(companySettingsToken);
+            document.getElementById('companySettingsLogin').style.display = isAuthenticated ? 'none' : 'block';
+            document.getElementById('companySettingsPanel').style.display = isAuthenticated ? 'block' : 'none';
+        }
+
+        async function loginCompanySettings(event) {
+            event.preventDefault();
+            const message = document.getElementById('companySettingsLoginMessage');
+            message.textContent = 'Memverifikasi akun admin...';
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        identifier: document.getElementById('settingsAdminUsername').value.trim(),
+                        password: document.getElementById('settingsAdminPassword').value,
+                        preferredRole: 'Admin'
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success || !result.data?.accessToken) {
+                    message.textContent = result.message || 'Login admin gagal.';
+                    return;
+                }
+                if (result.data.mustCompleteProfile || result.data.mustChangePassword) {
+                    openFirstLoginSetup(result.data, 'tab-settings');
+                    document.getElementById('settingsAdminPassword').value = '';
+                    return;
+                }
+
+                companySettingsToken = result.data.accessToken;
+                adminUserId = result.data.id || '';
+                sessionStorage.setItem('companySettingsToken', companySettingsToken);
+                sessionStorage.setItem('adminUserId', adminUserId);
+                document.getElementById('settingsAdminPassword').value = '';
+                showCompanySettingsAccess();
+                showAccountAdminAccess();
+                await loadCompanySettings();
+            } catch (error) {
+                message.textContent = `Gagal menghubungi server: ${error.message}`;
+            }
+        }
+
+        function logoutCompanySettings() {
+            companySettingsToken = '';
+            adminUserId = '';
+            adminAttendanceNotificationsEnabled = false;
+            sessionStorage.removeItem('companySettingsToken');
+            sessionStorage.removeItem('adminUserId');
+            sessionStorage.removeItem('adminAttendanceNotificationsEnabled');
+            showCompanySettingsAccess();
+            showAccountAdminAccess();
+            if (companyMap) {
+                companyMap.remove();
+                companyMap = null;
+                companyMarker = null;
+                companyRadiusCircle = null;
+            }
+        }
+
+        async function loadCompanySettings() {
+            const message = document.getElementById('companySettingsMessage');
+            if (message) message.textContent = 'Memuat data perusahaan...';
+            try {
+                const response = await fetch('/api/admin/company-settings', {
+                    headers: { Authorization: `Bearer ${companySettingsToken}` }
+                });
+                const result = await response.json();
+                if (response.status === 401) {
+                    logoutCompanySettings();
+                    document.getElementById('companySettingsLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                    return;
+                }
+                if (!response.ok || !result.success) throw new Error(result.message || 'Data gagal dimuat.');
+
+                companySettingsList = result.data || [];
+                const select = document.getElementById('settingsCompanySelect');
+                select.innerHTML = companySettingsList.map(company =>
+                    `<option value="${escapeHtml(company.id)}">${escapeHtml(company.namaPerusahaan)}</option>`).join('');
+                if (!companySettingsList.length) throw new Error('Belum ada data perusahaan yang dapat diatur.');
+                selectCompanySettings();
+            } catch (error) {
+                if (message) message.textContent = error.message;
+            }
+        }
+
+        function showAccountAdminAccess() {
+            const isAuthenticated = Boolean(companySettingsToken);
+            document.getElementById('accountAdminLogin').style.display = isAuthenticated ? 'none' : 'block';
+            document.getElementById('accountAdminTools').style.display = isAuthenticated ? 'block' : 'none';
+            if (!isAuthenticated) document.getElementById('accountEditor').style.display = 'none';
+            updateAdminNotificationButton();
+            updateAccountImportButton();
+            renderUserTable();
+        }
+
+        function updateAdminNotificationButton() {
+            const button = document.getElementById('btnEnableAttendanceNotifications');
+            if (!button) return;
+            const enabled = adminAttendanceNotificationsEnabled && 'Notification' in window && Notification.permission === 'granted';
+            button.innerHTML = `${materialIcon(enabled ? 'notifications_active' : 'notifications')} ${enabled ? 'Notifikasi Aktif' : 'Aktifkan Notifikasi'}`;
+            button.title = enabled ? 'Notifikasi presensi aktif pada dashboard ini' : 'Izinkan notifikasi browser untuk presensi baru';
+        }
+
+        async function requestAdminNotificationPermission() {
+            const message = document.getElementById('accountAdminMessage');
+            if (!companySettingsToken) {
+                message.textContent = 'Masuk sebagai admin untuk mengaktifkan notifikasi.';
+                return;
+            }
+            if (!('Notification' in window)) {
+                message.textContent = 'Browser ini tidak mendukung notifikasi desktop.';
+                return;
+            }
+            const permission = await Notification.requestPermission();
+            adminAttendanceNotificationsEnabled = permission === 'granted';
+            sessionStorage.setItem('adminAttendanceNotificationsEnabled', String(adminAttendanceNotificationsEnabled));
+            updateAdminNotificationButton();
+            message.textContent = adminAttendanceNotificationsEnabled
+                ? 'Notifikasi presensi aktif selama dashboard ini terbuka.'
+                : 'Izin notifikasi tidak diberikan.';
+        }
+
+        function notifyAdminOfAttendance(record) {
+            if (!companySettingsToken || !adminAttendanceNotificationsEnabled ||
+                !('Notification' in window) || Notification.permission !== 'granted') return;
+
+            const lateText = record.isLate ? ` Terlambat ${record.lateMinutes} menit.` : '';
+            const notification = new Notification(`${record.studentName || 'Siswa'} — Presensi ${record.type}`, {
+                body: `${record.companyName || 'Mitra PKL'} • ${record.formattedTime || ''} WIB.${lateText}`,
+                icon: '/logo_smkn5.png',
+                tag: `attendance-${record.id}`
+            });
+            notification.onclick = () => {
+                window.focus();
+                switchTab('tab-absensi');
+                notification.close();
+            };
+        }
+
+        function updateAccountImportButton() {
+            const button = document.getElementById('btnImportAccounts');
+            if (button) button.disabled = !companySettingsToken || !accountImportRows.some(row => row.errors.length === 0 && row.success !== true);
+        }
+
+        async function loginAccountAdmin(event) {
+            event.preventDefault();
+            const message = document.getElementById('accountAdminLoginMessage');
+            message.textContent = 'Memverifikasi akun admin...';
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        identifier: document.getElementById('accountAdminUsername').value.trim(),
+                        password: document.getElementById('accountAdminPassword').value,
+                        preferredRole: 'Admin'
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success || !result.data?.accessToken) {
+                    message.textContent = result.message || 'Login admin gagal.';
+                    return;
+                }
+                if (result.data.mustCompleteProfile || result.data.mustChangePassword) {
+                    openFirstLoginSetup(result.data, 'tab-akun');
+                    document.getElementById('accountAdminPassword').value = '';
+                    return;
+                }
+
+                companySettingsToken = result.data.accessToken;
+                adminUserId = result.data.id || '';
+                sessionStorage.setItem('companySettingsToken', companySettingsToken);
+                sessionStorage.setItem('adminUserId', adminUserId);
+                document.getElementById('accountAdminPassword').value = '';
+                showCompanySettingsAccess();
+                showAccountAdminAccess();
+                await refreshAllData(false);
+                await loadAdminAccountList();
+                message.textContent = 'Sesi admin aktif.';
+            } catch (error) {
+                message.textContent = `Gagal menghubungi server: ${error.message}`;
+            }
+        }
+
+        async function loadAdminAccountList() {
+            if (!companySettingsToken) return false;
+            const message = document.getElementById('accountAdminMessage');
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: { Authorization: `Bearer ${companySettingsToken}` }
+                });
+                const result = await response.json();
+                if (response.status === 401) {
+                    logoutCompanySettings();
+                    document.getElementById('accountAdminLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                    return false;
+                }
+                if (!response.ok || !result.success) throw new Error(result.message || 'Akses daftar akun ditolak.');
+
+                const publicUsers = new Map(rawUsers.map(user => [user.id, user]));
+                rawUsers = (result.data || []).map(user => ({ ...publicUsers.get(user.id), ...user }));
+                renderUserTable();
+                return true;
+            } catch (error) {
+                if (message) message.textContent = error.message;
+                return false;
+            }
+        }
+
+        function openFirstLoginSetup(user, returnTab) {
+            pendingFirstLoginToken = user.accessToken;
+            pendingFirstLoginUser = user;
+            firstLoginReturnTab = returnTab;
+            document.getElementById('firstLoginFullName').value = user.fullName || '';
+            document.getElementById('firstLoginEmail').value = user.email === '-' ? '' : user.email || '';
+            document.getElementById('firstLoginPhone').value = user.phoneNumber || '';
+            document.getElementById('firstLoginNewPassword').value = '';
+            document.getElementById('firstLoginConfirmPassword').value = '';
+            document.getElementById('firstLoginSetupMessage').textContent = '';
+            document.getElementById('firstLoginSetupModal').style.display = 'flex';
+        }
+
+        async function submitFirstLoginSetup(event) {
+            event.preventDefault();
+            const message = document.getElementById('firstLoginSetupMessage');
+            const newPassword = document.getElementById('firstLoginNewPassword').value;
+            if (newPassword !== document.getElementById('firstLoginConfirmPassword').value) {
+                message.textContent = 'Konfirmasi kata sandi tidak sama.';
+                return;
+            }
+            if (newPassword.length < 8) {
+                message.textContent = 'Kata sandi baru minimal 8 karakter.';
+                return;
+            }
+
+            const button = document.getElementById('btnFirstLoginSetup');
+            button.disabled = true;
+            message.textContent = 'Menyimpan profil dan kata sandi...';
+            try {
+                const response = await fetch('/api/account/first-login', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${pendingFirstLoginToken}` },
+                    body: JSON.stringify({
+                        fullName: document.getElementById('firstLoginFullName').value.trim(),
+                        email: document.getElementById('firstLoginEmail').value.trim(),
+                        phoneNumber: document.getElementById('firstLoginPhone').value.trim(),
+                        newPassword
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Setup awal gagal disimpan.');
+
+                companySettingsToken = pendingFirstLoginToken;
+                adminUserId = pendingFirstLoginUser?.id || '';
+                sessionStorage.setItem('companySettingsToken', companySettingsToken);
+                sessionStorage.setItem('adminUserId', adminUserId);
+                document.getElementById('firstLoginSetupModal').style.display = 'none';
+                pendingFirstLoginToken = '';
+                pendingFirstLoginUser = null;
+                showCompanySettingsAccess();
+                showAccountAdminAccess();
+                await refreshAllData(false);
+                if (firstLoginReturnTab === 'tab-settings') await loadCompanySettings();
+                else await loadAdminAccountList();
+            } catch (error) {
+                message.textContent = error.message;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function openAccountEditor(id = '') {
+            if (!companySettingsToken) return;
+            const user = id ? rawUsers.find(item => item.id === id) : null;
+            editingAccountId = user?.id || null;
+            document.getElementById('accountEditorTitle').textContent = user ? 'Edit Akun' : 'Tambah Akun';
+            document.getElementById('editorFullName').value = user?.fullName || '';
+            document.getElementById('editorIdentifier').value = user?.identifier || '';
+            document.getElementById('editorPassword').value = '';
+            document.getElementById('editorPassword').placeholder = user ? 'Kosongkan jika tidak diubah' : 'Minimal 8 karakter';
+            document.getElementById('editorRole').value = user?.role || 'Siswa';
+            document.getElementById('editorRole').disabled = Boolean(user);
+            document.getElementById('editorEmail').value = user?.email || '';
+            document.getElementById('editorPhone').value = user?.phoneNumber || '';
+            document.getElementById('editorNisn').value = user?.nisn || '';
+            document.getElementById('editorJurusanCode').value = user?.jurusanCode || '';
+            document.getElementById('accountEditor').style.display = 'block';
+            document.getElementById('accountEditor').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function closeAccountEditor() {
+            editingAccountId = null;
+            document.getElementById('accountEditor').style.display = 'none';
+            document.getElementById('editorRole').disabled = false;
+        }
+
+        async function saveAdminAccount(event) {
+            event.preventDefault();
+            if (!companySettingsToken) return;
+            const isEditing = Boolean(editingAccountId);
+            const password = document.getElementById('editorPassword').value;
+            const role = document.getElementById('editorRole').value;
+            if (!isEditing && password.length < 8) {
+                document.getElementById('accountAdminMessage').textContent = 'Kata sandi akun baru minimal 8 karakter.';
+                return;
+            }
+            if (password && password.length < 8) {
+                document.getElementById('accountAdminMessage').textContent = 'Kata sandi baru minimal 8 karakter.';
+                return;
+            }
+
+            const payload = {
+                fullName: document.getElementById('editorFullName').value.trim(),
+                identifier: document.getElementById('editorIdentifier').value.trim(),
+                password,
+                role,
+                email: document.getElementById('editorEmail').value.trim(),
+                phoneNumber: document.getElementById('editorPhone').value.trim(),
+                nisn: document.getElementById('editorNisn').value.trim(),
+                jurusanCode: document.getElementById('editorJurusanCode').value.trim().toUpperCase()
+            };
+            if (role === 'Siswa' && !isEditing && (!payload.nisn || !payload.jurusanCode)) {
+                document.getElementById('accountAdminMessage').textContent = 'NISN dan kode jurusan wajib untuk akun siswa.';
+                return;
+            }
+
+            const endpoint = isEditing
+                ? `/api/admin/users/${encodeURIComponent(editingAccountId)}`
+                : '/api/admin/users';
+            const button = document.querySelector('#accountEditor button[type="submit"]');
+            button.disabled = true;
+            try {
+                const response = await fetch(endpoint, {
+                    method: isEditing ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${companySettingsToken}` },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (response.status === 401) {
+                    logoutCompanySettings();
+                    document.getElementById('accountAdminLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                    return;
+                }
+                if (!response.ok || !result.success) throw new Error(result.message || 'Akun gagal disimpan.');
+                closeAccountEditor();
+                await refreshAllData(false);
+                document.getElementById('accountAdminMessage').textContent = result.message;
+            } catch (error) {
+                document.getElementById('accountAdminMessage').textContent = error.message;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function deleteAdminAccount(id) {
+            if (!companySettingsToken || id === adminUserId) return;
+            const user = rawUsers.find(item => item.id === id);
+            if (!user || !confirm(`Hapus akun ${user.fullName}?`)) return;
+            try {
+                const response = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${companySettingsToken}` }
+                });
+                const result = await response.json();
+                if (response.status === 401) {
+                    logoutCompanySettings();
+                    document.getElementById('accountAdminLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                    return;
+                }
+                if (!response.ok || !result.success) throw new Error(result.message || 'Akun gagal dihapus.');
+                await refreshAllData(false);
+                document.getElementById('accountAdminMessage').textContent = result.message;
+            } catch (error) {
+                document.getElementById('accountAdminMessage').textContent = error.message;
+            }
+        }
+
+        function downloadUserImportTemplate() {
+            if (!window.XLSX) {
+                document.getElementById('accountAdminMessage').textContent = 'Pustaka Excel belum termuat. Periksa koneksi internet.';
+                return;
+            }
+            const workbook = XLSX.utils.book_new();
+            const headers = ['FullName', 'Identifier', 'Role', 'Email', 'PhoneNumber', 'Nisn', 'JurusanCode'];
+            const templateSheet = XLSX.utils.aoa_to_sheet([headers]);
+            templateSheet['!cols'] = headers.map(() => ({ wch: 22 }));
+            XLSX.utils.book_append_sheet(workbook, templateSheet, 'Akun');
+            const guideSheet = XLSX.utils.aoa_to_sheet([
+                ['Kolom', 'Aturan'],
+                ['FullName', 'Wajib. Nama lengkap akun.'],
+                ['Identifier', 'Wajib dan unik. NIS, NIP, NIK, atau username. Isi sebagai teks agar angka nol di depan tidak hilang.'],
+                ['Kata sandi', 'Dibuat otomatis oleh sistem dan hanya ditampilkan setelah akun berhasil dibuat.'],
+                ['Role', 'Wajib: Siswa, PembimbingIndustri, PembimbingSekolah, atau Admin.'],
+                ['Email', 'Opsional.'],
+                ['PhoneNumber', 'Opsional.'],
+                ['Nisn', 'Wajib untuk role Siswa; kosongkan untuk role lain.'],
+                ['JurusanCode', 'Wajib untuk role Siswa. Contoh: RPL, DKV, PH, TKJ, TSM, TKR, TPM, MP, AK, APHPI.'],
+                ['Profil role', 'Siswa ditautkan ke kelas pertama di jurusan dan mitra utama; guru/mentor ditautkan ke sekolah/mitra utama.']
+            ]);
+            guideSheet['!cols'] = [{ wch: 22 }, { wch: 100 }];
+            XLSX.utils.book_append_sheet(workbook, guideSheet, 'Petunjuk');
+            XLSX.writeFile(workbook, 'template-import-akun.xlsx');
+        }
+
+        function normalizeAccountImportRow(row, rowNumber) {
+            const normalized = {};
+            for (const [key, value] of Object.entries(row)) {
+                normalized[key.toLowerCase().replace(/[^a-z0-9]/g, '')] = String(value ?? '').trim();
+            }
+            const pick = (...keys) => keys.map(key => normalized[key]).find(value => value !== undefined) || '';
+            const roleKey = pick('role', 'peran').toLowerCase().replace(/[^a-z]/g, '');
+            const roles = {
+                siswa: 'Siswa',
+                pembimbingindustri: 'PembimbingIndustri',
+                industri: 'PembimbingIndustri',
+                pembimbingsekolah: 'PembimbingSekolah',
+                gurupembimbing: 'PembimbingSekolah',
+                guru: 'PembimbingSekolah',
+                admin: 'Admin',
+                administrator: 'Admin'
+            };
+            const account = {
+                fullName: pick('fullname', 'namalengkap', 'nama'),
+                identifier: pick('identifier', 'loginid', 'identitaslogin', 'nis', 'nip', 'nik'),
+                role: roles[roleKey] || '',
+                email: pick('email'),
+                phoneNumber: pick('phonenumber', 'nomortelepon', 'notelp'),
+                nisn: pick('nisn'),
+                jurusanCode: pick('jurusancode', 'kodejurusan').toUpperCase()
+            };
+            const errors = [];
+            if (!account.fullName) errors.push('Nama wajib');
+            if (!account.identifier) errors.push('Identitas wajib');
+            if (!account.role) errors.push('Role tidak valid');
+            if (account.role === 'Siswa' && !account.nisn) errors.push('NISN wajib');
+            if (account.role === 'Siswa' && !account.jurusanCode) errors.push('Jurusan wajib');
+            return { rowNumber, account, errors };
+        }
+
+        async function previewAccountImport(event) {
+            const file = event.target.files?.[0];
+            const preview = document.getElementById('accountImportPreview');
+            const importButton = document.getElementById('btnImportAccounts');
+            accountImportRows = [];
+            if (!file) {
+                preview.innerHTML = '';
+                importButton.disabled = true;
+                return;
+            }
+            if (!window.XLSX) {
+                document.getElementById('accountAdminMessage').textContent = 'Pustaka Excel belum termuat. Periksa koneksi internet.';
+                importButton.disabled = true;
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                document.getElementById('accountAdminMessage').textContent = 'Ukuran file maksimal 10 MB.';
+                importButton.disabled = true;
+                return;
+            }
+            try {
+                const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+                accountImportRows = rows
+                    .filter(row => Object.values(row).some(value => String(value).trim()))
+                    .map((row, index) => normalizeAccountImportRow(row, index + 2));
+                if (accountImportRows.length > 500) throw new Error('Maksimal 500 baris akun per file.');
+                renderAccountImportPreview();
+                updateAccountImportButton();
+                document.getElementById('accountAdminMessage').textContent = `${accountImportRows.length} baris dibaca dari ${file.name}.`;
+            } catch (error) {
+                preview.innerHTML = '';
+                importButton.disabled = true;
+                document.getElementById('accountAdminMessage').textContent = `File tidak dapat dibaca: ${error.message}`;
+            }
+        }
+
+        function renderAccountImportPreview(results = accountImportRows) {
+            const preview = document.getElementById('accountImportPreview');
+            if (!results.length) {
+                preview.innerHTML = '';
+                return;
+            }
+            const validCount = results.filter(row => row.errors?.length === 0 && row.success !== false).length;
+            preview.innerHTML = `
+                <div style="font-size: 12px; font-weight: 700; margin-bottom: 6px;">${validCount} siap diproses · ${results.length - validCount} perlu diperiksa</div>
+                <div class="table-wrap" style="max-height: 260px; overflow: auto;">
+                    <table><thead><tr><th>Baris</th><th>Nama</th><th>Identitas</th><th>Role</th><th>Sandi sementara</th><th>Status</th></tr></thead>
+                    <tbody>${results.map(row => `<tr><td>${row.rowNumber}</td><td>${escapeHtml(row.account?.fullName || '')}</td><td>${escapeHtml(row.account?.identifier || '')}</td><td>${escapeHtml(row.account?.role || '')}</td><td><code>${escapeHtml(row.temporaryPassword || '-')}</code></td><td>${escapeHtml(row.result || (row.errors?.length ? row.errors.join(', ') : 'Siap'))}</td></tr>`).join('')}</tbody></table>
+                </div>`;
+        }
+
+        function openAccountEditor(id = '') {
+            if (!companySettingsToken) return;
+            const user = id ? rawUsers.find(item => item.id === id) : null;
+            editingAccountId = user?.id || null;
+            document.getElementById('accountEditorTitle').textContent = user ? 'Edit Akun' : 'Tambah Akun';
+            document.getElementById('editorFullName').value = user?.fullName || '';
+            document.getElementById('editorIdentifier').value = user?.identifier || '';
+            document.getElementById('editorPassword').value = '';
+            document.getElementById('editorPassword').placeholder = user ? 'Kosongkan jika tidak diubah' : 'Minimal 8 karakter';
+            document.getElementById('editorRole').value = user?.role || 'Siswa';
+            document.getElementById('editorRole').disabled = Boolean(user);
+            document.getElementById('editorEmail').value = user?.email || '';
+            document.getElementById('editorPhone').value = user?.phoneNumber || '';
+            document.getElementById('editorNisn').value = user?.nisn || '';
+            document.getElementById('editorJurusanCode').value = user?.jurusanCode || '';
+            document.getElementById('accountEditor').style.display = 'block';
+            document.getElementById('accountEditor').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function closeAccountEditor() {
+            editingAccountId = null;
+            document.getElementById('accountEditor').style.display = 'none';
+            document.getElementById('editorRole').disabled = false;
+        }
+
+        async function saveAdminAccount(event) {
+            event.preventDefault();
+            if (!companySettingsToken) return;
+            const isEditing = Boolean(editingAccountId);
+            const password = document.getElementById('editorPassword').value;
+            const role = document.getElementById('editorRole').value;
+            const message = document.getElementById('accountAdminMessage');
+            if (isEditing && password && password.length < 8) {
+                message.textContent = 'Kata sandi baru minimal 8 karakter.';
+                return;
+            }
+
+            const payload = {
+                fullName: document.getElementById('editorFullName').value.trim(),
+                identifier: document.getElementById('editorIdentifier').value.trim(),
+                password,
+                role,
+                email: document.getElementById('editorEmail').value.trim(),
+                phoneNumber: document.getElementById('editorPhone').value.trim(),
+                nisn: document.getElementById('editorNisn').value.trim(),
+                jurusanCode: document.getElementById('editorJurusanCode').value.trim().toUpperCase()
+            };
+            if (role === 'Siswa' && !isEditing && (!payload.nisn || !payload.jurusanCode)) {
+                message.textContent = 'NISN dan kode jurusan wajib untuk akun siswa.';
+                return;
+            }
+
+            const endpoint = isEditing ? `/api/admin/users/${encodeURIComponent(editingAccountId)}` : '/api/admin/users';
+            const button = document.querySelector('#accountEditor button[type="submit"]');
+            button.disabled = true;
+            try {
+                const response = await fetch(endpoint, {
+                    method: isEditing ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${companySettingsToken}` },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (response.status === 401) {
+                    logoutCompanySettings();
+                    document.getElementById('accountAdminLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                    return;
+                }
+                if (!response.ok || !result.success) throw new Error(result.message || 'Akun gagal disimpan.');
+                closeAccountEditor();
+                await refreshAllData(false);
+                const temporaryPassword = isEditing ? '' : result.data?.temporaryPassword;
+                message.textContent = temporaryPassword
+                    ? `${result.message} Kata sandi sementara: ${temporaryPassword}. Catat dan sampaikan sekarang.`
+                    : result.message;
+            } catch (error) {
+                message.textContent = error.message;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function importUserAccounts() {
+            if (!companySettingsToken) return;
+            const rows = accountImportRows.filter(row => row.errors.length === 0 && row.success !== true);
+            if (!rows.length) return;
+            const button = document.getElementById('btnImportAccounts');
+            const message = document.getElementById('accountAdminMessage');
+            const results = [...accountImportRows];
+            button.disabled = true;
+            let completed = 0;
+            for (const row of rows) {
+                try {
+                    const response = await fetch('/api/admin/users', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${companySettingsToken}` },
+                        body: JSON.stringify(row.account)
+                    });
+                    const result = await response.json();
+                    const target = results.find(item => item.rowNumber === row.rowNumber);
+                    target.success = response.ok && result.success;
+                    target.temporaryPassword = target.success ? result.data?.temporaryPassword || '' : '';
+                    target.result = result.message || (target.success ? 'Akun ditambahkan' : 'Gagal ditambahkan');
+                    if (response.status === 401) {
+                        logoutCompanySettings();
+                        document.getElementById('accountAdminLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                        break;
+                    }
+                } catch (error) {
+                    const target = results.find(item => item.rowNumber === row.rowNumber);
+                    target.success = false;
+                    target.result = error.message;
+                }
+                completed++;
+                message.textContent = `Mengimpor ${completed} dari ${rows.length} akun...`;
+                renderAccountImportPreview(results);
+            }
+
+            accountImportRows = results;
+            await refreshAllData(false);
+            const added = results.filter(row => row.success === true).length;
+            const failed = results.filter(row => row.success === false || row.errors.length > 0).length;
+            message.textContent = `Impor selesai: ${added} berhasil, ${failed} gagal/perlu diperiksa.`;
+            renderAccountImportPreview(results);
+            button.disabled = !companySettingsToken || !results.some(row => row.errors.length === 0 && row.success !== true);
+        }
+
+        async function deleteAdminAccount(id) {
+            if (!companySettingsToken || id === adminUserId) return;
+            const user = rawUsers.find(item => item.id === id);
+            if (!user || !confirm(`Hapus akun ${user.fullName}?`)) return;
+            try {
+                const response = await fetch(`/api/admin/users/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${companySettingsToken}` }
+                });
+                const result = await response.json();
+                if (response.status === 401) {
+                    logoutCompanySettings();
+                    document.getElementById('accountAdminLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                    return;
+                }
+                if (!response.ok || !result.success) throw new Error(result.message || 'Akun gagal dihapus.');
+                await refreshAllData(false);
+                document.getElementById('accountAdminMessage').textContent = result.message;
+            } catch (error) {
+                document.getElementById('accountAdminMessage').textContent = error.message;
+            }
+        }
+
+        function selectCompanySettings() {
+            const company = companySettingsList.find(item => item.id === document.getElementById('settingsCompanySelect').value);
+            if (!company) return;
+            document.getElementById('settingsCompanyName').value = company.namaPerusahaan || '';
+            document.getElementById('settingsCompanyIndustry').value = company.bidangUsaha || '';
+            document.getElementById('settingsCompanyAddress').value = company.alamat || '';
+            document.getElementById('settingsCompanyContact').value = company.kontakPerson || '';
+            document.getElementById('settingsCompanyPhone').value = company.noTelepon || '';
+            document.getElementById('settingsWorkStart').value = company.jamMasuk || '08:00';
+            document.getElementById('settingsWorkEnd').value = company.jamPulang || '17:00';
+            document.getElementById('settingsLatitude').value = company.latitude;
+            document.getElementById('settingsLongitude').value = company.longitude;
+            document.getElementById('settingsRadius').value = company.radiusMeters;
+            initializeCompanyMap(Number(company.latitude), Number(company.longitude), Number(company.radiusMeters));
+            document.getElementById('companySettingsMessage').textContent = '';
+        }
+
+        function initializeCompanyMap(latitude, longitude, radius) {
+            if (!window.L) {
+                document.getElementById('companySettingsMessage').textContent = 'Peta tidak dapat dimuat. Periksa koneksi internet.';
+                return;
+            }
+            if (!companyMap) {
+                companyMap = L.map('companySettingsMap').setView([latitude, longitude], 17);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 20,
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(companyMap);
+                companyMarker = L.marker([latitude, longitude], { draggable: true }).addTo(companyMap);
+                companyRadiusCircle = L.circle([latitude, longitude], { radius, color: '#2563EB', fillColor: '#3B82F6', fillOpacity: 0.12 }).addTo(companyMap);
+                companyMap.on('click', event => setCompanyCoordinates(event.latlng.lat, event.latlng.lng));
+                companyMarker.on('dragend', event => {
+                    const point = event.target.getLatLng();
+                    setCompanyCoordinates(point.lat, point.lng);
+                });
+            } else {
+                companyMap.setView([latitude, longitude], Math.max(companyMap.getZoom(), 16));
+                companyMarker.setLatLng([latitude, longitude]);
+                companyRadiusCircle.setLatLng([latitude, longitude]);
+                companyRadiusCircle.setRadius(radius);
+            }
+            setTimeout(() => companyMap.invalidateSize(), 100);
+        }
+
+        function setCompanyCoordinates(latitude, longitude) {
+            document.getElementById('settingsLatitude').value = latitude.toFixed(7);
+            document.getElementById('settingsLongitude').value = longitude.toFixed(7);
+            companyMarker.setLatLng([latitude, longitude]);
+            companyRadiusCircle.setLatLng([latitude, longitude]);
+        }
+
+        function syncCompanyMapFromInputs() {
+            const latitude = Number(document.getElementById('settingsLatitude').value);
+            const longitude = Number(document.getElementById('settingsLongitude').value);
+            if (!companyMap || !Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return;
+            companyMarker.setLatLng([latitude, longitude]);
+            companyRadiusCircle.setLatLng([latitude, longitude]);
+            companyMap.panTo([latitude, longitude]);
+        }
+
+        function syncCompanyMapRadius() {
+            const radius = Number(document.getElementById('settingsRadius').value);
+            if (companyRadiusCircle && Number.isFinite(radius) && radius > 0) companyRadiusCircle.setRadius(radius);
+        }
+
+        function useCurrentMapLocation() {
+            const message = document.getElementById('companySettingsMessage');
+            if (!navigator.geolocation) {
+                message.textContent = 'Browser ini tidak mendukung lokasi perangkat.';
+                return;
+            }
+            message.textContent = 'Mengambil lokasi dengan GPS...';
+            navigator.geolocation.getCurrentPosition(position => {
+                setCompanyCoordinates(position.coords.latitude, position.coords.longitude);
+                companyMap.setView([position.coords.latitude, position.coords.longitude], 18);
+                message.textContent = `Lokasi diperbarui; akurasi perangkat ±${Math.round(position.coords.accuracy)} m.`;
+            }, error => {
+                message.textContent = error.code === 1
+                    ? 'Izin lokasi ditolak. Pilih titik kantor langsung pada peta.'
+                    : 'Lokasi tidak tersedia. Pilih titik kantor langsung pada peta.';
+            }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+        }
+
+        async function saveCompanySettings(event) {
+            event.preventDefault();
+            const id = document.getElementById('settingsCompanySelect').value;
+            const payload = {
+                namaPerusahaan: document.getElementById('settingsCompanyName').value.trim(),
+                bidangUsaha: document.getElementById('settingsCompanyIndustry').value.trim(),
+                alamat: document.getElementById('settingsCompanyAddress').value.trim(),
+                kontakPerson: document.getElementById('settingsCompanyContact').value.trim(),
+                noTelepon: document.getElementById('settingsCompanyPhone').value.trim(),
+                jamMasuk: document.getElementById('settingsWorkStart').value,
+                jamPulang: document.getElementById('settingsWorkEnd').value,
+                latitude: Number(document.getElementById('settingsLatitude').value),
+                longitude: Number(document.getElementById('settingsLongitude').value),
+                radiusMeters: Number(document.getElementById('settingsRadius').value)
+            };
+            const message = document.getElementById('companySettingsMessage');
+            const button = document.getElementById('btnSaveCompanySettings');
+            button.disabled = true;
+            message.textContent = 'Menyimpan perubahan...';
+            try {
+                const response = await fetch(`/api/admin/company-settings/${encodeURIComponent(id)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${companySettingsToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (response.status === 401) {
+                    logoutCompanySettings();
+                    document.getElementById('companySettingsLoginMessage').textContent = 'Sesi admin berakhir. Silakan masuk kembali.';
+                    return;
+                }
+                if (!response.ok || !result.success) throw new Error(result.message || 'Perubahan gagal disimpan.');
+                await loadCompanySettings();
+                message.textContent = result.message;
+            } catch (error) {
+                message.textContent = error.message;
+            } finally {
+                button.disabled = false;
             }
         }
 
@@ -1070,7 +2172,7 @@
 
         async function refreshAllData(showIndicator = true) {
             if (showIndicator) {
-                document.querySelector('.btn-refresh').innerText = '⏳ Memuat...';
+                document.querySelector('.btn-refresh').innerHTML = `${materialIcon('hourglass_top')} Memuat...`;
             }
 
             try {
@@ -1083,6 +2185,7 @@
                     document.getElementById('metricTodayAtt').innerText = d.todayTotal;
                     document.getElementById('metricTotalLogs').innerText = d.totalLogbooks;
                     document.getElementById('metricPendingAtt').innerText = d.pendingApprovalCount;
+                    document.getElementById('metricLateAtt').innerText = d.todayLate || 0;
 
                     document.getElementById('badgeCountAtt').innerText = d.totalAttendances;
                     document.getElementById('badgeCountUsers').innerText = d.totalUsers;
@@ -1093,7 +2196,15 @@
                 const attRes = await fetch('/api/attendance');
                 const attJson = await attRes.json();
                 if (attJson.success) {
-                    rawAttendances = attJson.data || [];
+                    const incomingAttendances = attJson.data || [];
+                    if (attendanceBaselineInitialized) {
+                        incomingAttendances
+                            .filter(record => record.id && !seenAttendanceIds.has(record.id))
+                            .forEach(notifyAdminOfAttendance);
+                    }
+                    rawAttendances = incomingAttendances;
+                    seenAttendanceIds = new Set(incomingAttendances.map(record => record.id).filter(Boolean));
+                    attendanceBaselineInitialized = true;
                     renderAttendanceList();
                 }
 
@@ -1102,7 +2213,8 @@
                 const usersJson = await usersRes.json();
                 if (usersJson.success) {
                     rawUsers = usersJson.data || [];
-                    renderUserTable();
+                    if (companySettingsToken) await loadAdminAccountList();
+                    else renderUserTable();
                 }
 
                 // Fetch logbooks
@@ -1124,7 +2236,7 @@
                 console.error('Gagal mengambil data monitoring:', err);
             } finally {
                 if (showIndicator) {
-                    document.querySelector('.btn-refresh').innerText = '🔄 Segarkan Data';
+                    document.querySelector('.btn-refresh').innerHTML = `${materialIcon('refresh')} Segarkan Data`;
                 }
             }
         }
@@ -1136,8 +2248,8 @@
             container.innerHTML = '';
 
             const icons = {
-                RPL: '💻', DKV: '🎨', PH: '🏨', TKJ: '🌐', TSM: '🏍️',
-                TKR: '🚗', TPM: '⚙️', MP: '📑', AK: '💰', APHPI: '🐟'
+                RPL: 'code', DKV: 'palette', PH: 'hotel', TKJ: 'language', TSM: 'two_wheeler',
+                TKR: 'directions_car', TPM: 'settings', MP: 'description', AK: 'payments', APHPI: 'set_meal'
             };
 
             rawJurusan.forEach(j => {
@@ -1148,14 +2260,14 @@
                 card.style.borderRadius = 'var(--radius-lg)';
                 card.style.padding = '18px';
 
-                const icon = icons[j.kode] || '📁';
+                const icon = icons[j.kode] || 'folder_open';
                 const rombelList = (j.daftarKelas || []).join(', ');
 
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div style="font-size: 26px; background: var(--gray-100); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
-                                ${icon}
+                                ${materialIcon(icon)}
                             </div>
                             <div>
                                 <h3 style="font-size: 15px; font-weight: 800; color: var(--gray-900);">${escapeHtml(j.kode)}</h3>
@@ -1166,18 +2278,18 @@
                     </div>
 
                     <div style="font-size: 11px; color: var(--gray-700); display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
-                        <div><strong>📁 Jalur Direktori Fisik:</strong> <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--gray-100); padding: 2px 6px; border-radius: 4px;">${escapeHtml(j.directoryPath)}/</code></div>
-                        <div><strong>👥 Siswa Terdaftar:</strong> <span style="font-weight: 700; color: var(--primary);">${j.totalSiswa} Siswa</span></div>
-                        <div><strong>📍 Presensi Tercatat:</strong> <span style="font-weight: 700; color: var(--success);">${j.totalPresensi} Presensi</span></div>
-                        <div><strong>🏫 Rombel / Kelas:</strong> ${escapeHtml(rombelList || '-')}</div>
+                        <div><strong>${materialIcon('folder_open')} Jalur Direktori Fisik:</strong> <code style="font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--gray-100); padding: 2px 6px; border-radius: 4px;">${escapeHtml(j.directoryPath)}/</code></div>
+                        <div><strong>${materialIcon('group')} Siswa Terdaftar:</strong> <span style="font-weight: 700; color: var(--primary);">${j.totalSiswa} Siswa</span></div>
+                        <div><strong>${materialIcon('location_on')} Presensi Tercatat:</strong> <span style="font-weight: 700; color: var(--success);">${j.totalPresensi} Presensi</span></div>
+                        <div><strong>${materialIcon('school')} Rombel / Kelas:</strong> ${escapeHtml(rombelList || '-')}</div>
                     </div>
 
                     <div style="display: flex; gap: 8px; border-top: 1px dashed var(--gray-200); padding-top: 10px;">
                         <button class="btn-action" style="background: var(--primary); color: white; flex: 1; justify-content: center; padding: 7px 10px;" onclick="openJurusanDirectoryTab('${j.kode}')">
-                            👥 Buka Akun (${j.totalSiswa})
+                            ${materialIcon('group')} Buka Akun (${j.totalSiswa})
                         </button>
                         <button class="btn-action" style="background: var(--success); color: white; flex: 1; justify-content: center; padding: 7px 10px;" onclick="openJurusanDirectoryAtt('${j.kode}')">
-                            📍 Buka Presensi (${j.totalPresensi})
+                            ${materialIcon('location_on')} Buka Presensi (${j.totalPresensi})
                         </button>
                     </div>
                 `;
@@ -1224,7 +2336,7 @@
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; background: white; border-radius: 12px; border: 1.5px dashed var(--gray-300);">
-                        <div style="font-size: 40px; margin-bottom: 8px;">📋</div>
+                        <div style="font-size: 40px; margin-bottom: 8px;">${materialIcon('event_note')}</div>
                         <div style="font-size: 16px; font-weight: 700; color: var(--gray-800);">Daftar Presensi Masih Kosong</div>
                         <p style="font-size: 12px; color: var(--gray-600); margin-top: 6px; max-width: 540px; margin-left: auto; margin-right: auto; line-height: 1.5;">
                             Belum ada data presensi yang masuk. Siswa melakukan presensi dari aplikasi mobile sesuai direktori jurusannya masing-masing (RPL, DKV, PH, TKJ, TSM, TKR, TPM, MP, AK, APHPI) dan data akan langsung tersimpan di direktori jurusan terkait.
@@ -1240,8 +2352,8 @@
 
                 const isWithinRadius = item.distanceMeters <= 100.0;
                 const radiusBadge = isWithinRadius
-                    ? `<span class="badge badge-radius-ok">✓ Dalam Radius (${item.distanceMeters.toFixed(1)}m)</span>`
-                    : `<span class="badge badge-radius-out">⚠ Luar Radius (${item.distanceMeters.toFixed(1)}m)</span>`;
+                    ? `<span class="badge badge-radius-ok">${materialIcon('check_circle')} Dalam Radius (${item.distanceMeters.toFixed(1)}m)</span>`
+                    : `<span class="badge badge-radius-out">${materialIcon('warning')} Luar Radius (${item.distanceMeters.toFixed(1)}m)</span>`;
 
                 const typeClass = 'badge-' + (item.type || 'masuk').toLowerCase();
 
@@ -1250,7 +2362,7 @@
                     photoHtml = `<img src="data:image/jpeg;base64,${item.photoBase64}" alt="Foto Selfie">`;
                 } else {
                     photoHtml = `
-                        <div class="att-photo-placeholder">📷</div>
+                        <div class="att-photo-placeholder">${materialIcon('photo_camera')}</div>
                         <div class="att-photo-hint">Geotag Photo</div>
                     `;
                 }
@@ -1261,7 +2373,10 @@
                             <div class="att-student-name">${escapeHtml(item.studentName || 'Siswa')} <span class="badge" style="background:#E0E7FF; color:#3730A3; font-size:9px;">${escapeHtml(item.jurusanCode || 'RPL')}</span></div>
                             <div class="att-student-sub">NIS: ${escapeHtml(item.studentNis || item.studentNisn || '-')} • ${escapeHtml(item.companyName || 'Mitra PKL')}</div>
                         </div>
-                        <span class="badge ${typeClass}">${item.type}</span>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                            <span class="badge ${typeClass}">${item.type}</span>
+                            ${item.isLate ? `<span class="badge badge-late">${materialIcon('schedule')} Terlambat ${item.lateMinutes} menit</span>` : ''}
+                        </div>
                     </div>
 
                     <div class="att-body-grid">
@@ -1271,23 +2386,23 @@
 
                         <div class="att-info-list">
                             <div class="att-info-item">
-                                <span class="label">⏰ Waktu:</span>
+                                <span class="label">${materialIcon('schedule')} Waktu:</span>
                                 <span class="value">${item.formattedDate} • ${item.formattedTime} WIB</span>
                             </div>
                             <div class="att-info-item">
-                                <span class="label">📍 Lokasi:</span>
+                                <span class="label">${materialIcon('location_on')} Lokasi:</span>
                                 <span class="value">${escapeHtml(item.locationAddress || 'Lokasi Terdaftar')}</span>
                             </div>
                             <div class="att-info-item">
-                                <span class="label">🌐 GPS:</span>
+                                <span class="label">${materialIcon('gps_fixed')} GPS:</span>
                                 <span class="value">${item.latitude.toFixed(5)}, ${item.longitude.toFixed(5)}</span>
                             </div>
                             <div class="att-info-item">
-                                <span class="label">🎯 Radius:</span>
+                                <span class="label">${materialIcon('my_location')} Radius:</span>
                                 <span class="value">${radiusBadge}</span>
                             </div>
                             <div class="att-info-item">
-                                <span class="label">💬 Catatan:</span>
+                                <span class="label">${materialIcon('chat_bubble')} Catatan:</span>
                                 <span class="value">${escapeHtml(item.notes || '-')}</span>
                             </div>
                         </div>
@@ -1304,12 +2419,12 @@
 
                         <div style="display: flex; gap: 6px;">
                             <a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" target="_blank" class="btn-action btn-map" title="Buka Titik Geotag di Google Maps">
-                                🗺️ Maps
+                                ${materialIcon('map')} Maps
                             </a>
                             ${item.approvalStatus !== 'Disetujui' ? `
-                                <button class="btn-action btn-approve" onclick="verifyAttendance('${item.id}', true)">✓ Setujui</button>
+                                <button class="btn-action btn-approve" onclick="verifyAttendance('${item.id}', true)">${materialIcon('check_circle')} Setujui</button>
                             ` : `
-                                <button class="btn-action btn-reject" onclick="verifyAttendance('${item.id}', false)">✗ Batal</button>
+                                <button class="btn-action btn-reject" onclick="verifyAttendance('${item.id}', false)">${materialIcon('cancel')} Batal</button>
                             `}
                         </div>
                     </div>
@@ -1347,6 +2462,13 @@
         function renderUserTable() {
             const tbody = document.getElementById('userTableBody');
             tbody.innerHTML = '';
+            tbody.onclick = event => {
+                const button = event.target.closest('button[data-account-action]');
+                if (!button || !companySettingsToken) return;
+                const id = button.dataset.accountId;
+                if (button.dataset.accountAction === 'edit') openAccountEditor(id);
+                if (button.dataset.accountAction === 'delete') deleteAdminAccount(id);
+            };
 
             let filtered = rawUsers;
             if (activeRoleFilter !== 'ALL') {
@@ -1387,7 +2509,7 @@
             const pageData = filtered.slice(startIndex, endIndex);
 
             if (totalItems === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 36px 16px; color: var(--gray-600);">
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 36px 16px; color: var(--gray-600);">
                     <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
                     <div style="font-weight: 700; color: var(--gray-800); font-size: 14px;">Tidak ada data siswa atau akun yang ditemukan</div>
                     <div style="font-size: 12px; margin-top: 4px; color: var(--gray-500);">Coba ubah kata kunci pencarian, filter direktori jurusan, atau filter peran (role).</div>
@@ -1422,6 +2544,11 @@
                             <div>${escapeHtml(u.email || '-')}</div>
                             <div style="font-size: 10px; color: var(--gray-600);">${escapeHtml(u.phoneNumber || '-')}</div>
                         </td>
+                        <td>${companySettingsToken ? `
+                            <div style="display: flex; gap: 6px;">
+                                <button class="btn-action" type="button" data-account-action="edit" data-account-id="${escapeHtml(u.id)}" aria-label="Edit akun"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button>
+                                <button class="btn-action" type="button" data-account-action="delete" data-account-id="${escapeHtml(u.id)}" aria-label="Hapus akun" ${u.id === adminUserId ? 'disabled title="Akun admin aktif tidak dapat dihapus"' : ''}><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>
+                            </div>` : ''}</td>
                     `;
 
                     tbody.appendChild(tr);
@@ -1554,7 +2681,7 @@
                     <td style="max-width: 300px;">${escapeHtml(l.description || '-')}</td>
                     <td>
                         <span class="badge ${l.isApproved ? 'badge-radius-ok' : 'badge-izin'}">
-                            ${l.isApproved ? '✓ Terverifikasi (' + escapeHtml(l.approvedBy) + ')' : 'Menunggu Approval'}
+                            ${l.isApproved ? materialIcon('verified') + ' Terverifikasi (' + escapeHtml(l.approvedBy) + ')' : materialIcon('pending') + ' Menunggu Approval'}
                         </span>
                     </td>
                 `;

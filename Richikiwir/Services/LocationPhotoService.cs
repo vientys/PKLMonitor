@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Media;
+using Richikiwir.Models;
 
 namespace Richikiwir.Services
 {
@@ -14,10 +15,14 @@ namespace Richikiwir.Services
         public double AccuracyMeters { get; set; }
         public string AddressName { get; set; } = string.Empty;
         public double DistanceFromOfficeMeters { get; set; }
-        public bool IsWithinOfficeRadius => DistanceFromOfficeMeters <= 100.0;
+        public double TargetLatitude { get; set; }
+        public double TargetLongitude { get; set; }
+        public double AllowedRadiusMeters { get; set; } = 100.0;
+        public bool HasLocationFix { get; set; }
+        public bool IsWithinOfficeRadius => HasLocationFix && DistanceFromOfficeMeters <= AllowedRadiusMeters;
         public string GeofenceStatusText => IsWithinOfficeRadius 
-            ? "✓ Dalam Radius Lokasi PKL (Valid)" 
-            : "⚠ Di Luar Radius Lokasi PKL (>100m)";
+            ? "Dalam Radius Lokasi PKL (Valid)" 
+            : "Di Luar Radius Lokasi PKL (>100m)";
     }
 
     public class LocationPhotoService
@@ -27,14 +32,20 @@ namespace Richikiwir.Services
         public const double TargetOfficeLon = 106.83154;
         public const string TargetOfficeName = "PT Solusi Digital Nusantara (Cyber 2 Tower, Lt. 18)";
 
-        public static async Task<LocationResult> GetRealtimeLocationAsync()
+        public static async Task<LocationResult> GetRealtimeLocationAsync(string? identifier = null)
         {
+            var geofence = await ApiService.Current.GetCompanyGeofenceAsync(identifier);
+            var targetLatitude = geofence?.TargetLatitude ?? TargetOfficeLat;
+            var targetLongitude = geofence?.TargetLongitude ?? TargetOfficeLon;
             var result = new LocationResult
             {
-                Latitude = TargetOfficeLat,
-                Longitude = TargetOfficeLon,
-                AccuracyMeters = 5.0,
-                AddressName = TargetOfficeName
+                TargetLatitude = targetLatitude,
+                TargetLongitude = targetLongitude,
+                AllowedRadiusMeters = geofence?.AllowedRadiusMeters > 0 ? geofence.AllowedRadiusMeters : 100.0,
+                Latitude = 0,
+                Longitude = 0,
+                AccuracyMeters = 0,
+                AddressName = geofence?.Address ?? TargetOfficeName
             };
 
             try
@@ -55,7 +66,9 @@ namespace Richikiwir.Services
                         result.Latitude = location.Latitude;
                         result.Longitude = location.Longitude;
                         result.AccuracyMeters = location.Accuracy ?? 8.0;
-                        result.AddressName = $"{TargetOfficeName} [GPS Aktif: {location.Latitude:F5}, {location.Longitude:F5}]";
+                        result.HasLocationFix = true;
+                        var companyName = geofence?.CompanyName ?? TargetOfficeName;
+                        result.AddressName = $"{companyName} [GPS: {location.Latitude:F5}, {location.Longitude:F5}]";
                     }
                 }
             }
@@ -65,7 +78,9 @@ namespace Richikiwir.Services
             }
 
             // Hitung jarak Haversine ke kantor target
-            result.DistanceFromOfficeMeters = CalculateDistanceMeters(result.Latitude, result.Longitude, TargetOfficeLat, TargetOfficeLon);
+            result.DistanceFromOfficeMeters = result.HasLocationFix
+                ? CalculateDistanceMeters(result.Latitude, result.Longitude, targetLatitude, targetLongitude)
+                : double.PositiveInfinity;
             return result;
         }
 

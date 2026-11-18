@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Richikiwir.Views"
+             x:Class="Richikiwir.Views.FirstLoginSetupPage"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource AppBackground}">
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="18" VerticalOptions="Center">
+            <Border StrokeShape="RoundRectangle 18" BackgroundColor="{StaticResource Primary}" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <controls:MaterialIcon Icon="verified_user" IconSize="36" IconColor="White" />
+                    <Label Text="Lengkapi profil Anda" FontSize="22" FontAttributes="Bold" TextColor="White" />
+                    <Label Text="Untuk keamanan akun, lengkapi kontak dan buat kata sandi pribadi sebelum melanjutkan."
+                           FontSize="13" TextColor="#DBEAFE" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 14" Stroke="{StaticResource BorderLight}" BackgroundColor="White" Padding="18">
+                <VerticalStackLayout Spacing="12">
+                    <Entry x:Name="TxtFullName" Placeholder="Nama lengkap" />
+                    <Entry x:Name="TxtEmail" Placeholder="Email aktif" Keyboard="Email" />
+                    <Entry x:Name="TxtPhone" Placeholder="Nomor telepon aktif" Keyboard="Telephone" />
+                    <Entry x:Name="TxtNewPassword" PlaceholderColor="Gray" TextColor="#000000" Placeholder="Kata sandi baru (minimal 8 karakter)" IsPassword="True" />
+                    <Entry x:Name="TxtConfirmPassword"  PlaceholderColor="Gray" Placeholder="Ulangi kata sandi baru" IsPassword="True" />
+                    <Label x:Name="LblSetupError" IsVisible="False" FontSize="12" TextColor="#B91C1C" />
+                    <Button x:Name="BtnCompleteSetup" Text="Simpan dan Lanjutkan" Clicked="OnCompleteSetupClicked"
+                            FontAttributes="Bold" BackgroundColor="{StaticResource Primary}" TextColor="White"
+                            HeightRequest="48" CornerRadius="10" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

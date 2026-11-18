@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Richikiwir.Views.AccountManagementPage"
+             Title="Kelola Akun"
+             BackgroundColor="{StaticResource AppBackground}">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                <Label Text="Akun pengguna" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+                <Label x:Name="LblAccountCount" Text="Memuat akun..." FontSize="12" TextColor="{StaticResource Gray600}" />
+            </VerticalStackLayout>
+            <Button Grid.Column="1" Text="+ Tambah" Clicked="OnAddClicked"
+                    BackgroundColor="{StaticResource Primary}" TextColor="White"
+                    FontAttributes="Bold" CornerRadius="8" HeightRequest="42" />
+        </Grid>
+
+        <Border x:Name="EditorCard" Grid.Row="1" IsVisible="False"
+                Stroke="{StaticResource BorderLight}" StrokeThickness="1"
+                StrokeShape="RoundRectangle 12" BackgroundColor="White" Padding="14">
+            <ScrollView HeightRequest="390">
+                <VerticalStackLayout Spacing="9">
+                    <Label x:Name="LblEditorTitle" Text="Tambah akun" FontSize="16"
+                           FontAttributes="Bold" TextColor="{StaticResource PrimaryDark}" />
+                    <Entry x:Name="TxtFullName" Placeholder="Nama lengkap" />
+                    <Entry x:Name="TxtIdentifier" Placeholder="NIS / NIP / NIK / username" />
+                    <Picker x:Name="PickerRole" Title="Pilih peran" SelectedIndexChanged="OnRoleChanged" />
+                          <Label x:Name="LblProfileAssignment" IsVisible="False" FontSize="11"
+                              TextColor="{StaticResource Gray600}" />
+                    <Entry x:Name="TxtEmail" Placeholder="Email (opsional)" Keyboard="Email" />
+                    <Entry x:Name="TxtPhone" Placeholder="Nomor telepon (opsional)" Keyboard="Telephone" />
+                          <Entry x:Name="TxtPassword" Placeholder="Kata sandi baru (minimal 8 karakter)" IsPassword="True" IsVisible="False" />
+                          <Label x:Name="LblGeneratedPassword" Text="Kata sandi sementara dibuat otomatis dan akan ditampilkan setelah akun tersimpan."
+                              FontSize="11" TextColor="{StaticResource Gray600}" IsVisible="False" />
+                    <VerticalStackLayout x:Name="LayoutStudentFields" IsVisible="False" Spacing="8">
+                        <Entry x:Name="TxtNisn" Placeholder="NISN" Keyboard="Numeric" />
+                        <Picker x:Name="PickerJurusan" Title="Pilih jurusan" />
+                    </VerticalStackLayout>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
+                        <Button Text="Batal" Clicked="OnCancelClicked" BackgroundColor="#E2E8F0"
+                                TextColor="{StaticResource Gray800}" CornerRadius="8" />
+                        <Button Grid.Column="1" Text="Simpan" Clicked="OnSaveClicked"
+                                BackgroundColor="{StaticResource Primary}" TextColor="White" CornerRadius="8" />
+                    </Grid>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Border>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+            <SearchBar x:Name="SearchAccounts" Placeholder="Cari nama atau identitas" TextChanged="OnSearchChanged"
+                       HeightRequest="44" />
+            <CollectionView x:Name="AccountsList" VerticalOptions="Fill">
+                <CollectionView.EmptyView>
+                    <Label Text="Tidak ada akun untuk ditampilkan." HorizontalTextAlignment="Center"
+                           TextColor="{StaticResource Gray500}" Margin="0,24" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{StaticResource BorderLight}" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10" BackgroundColor="White"
+                                Padding="12" Margin="0,3">
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                                <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                                    <Label Text="{Binding FullName}" FontSize="14" FontAttributes="Bold"
+                                           TextColor="{StaticResource Gray800}" />
+                                    <Label Text="{Binding RoleDisplayName}" FontSize="11"
+                                           TextColor="{StaticResource Primary}" />
+                                    <Label Text="{Binding Identifier}" FontSize="11"
+                                           TextColor="{StaticResource Gray600}" />
+                                </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="Edit" Clicked="OnEditClicked"
+                                        VerticalOptions="Center" Padding="10,0" HeightRequest="36"
+                                        BackgroundColor="#E0F2FE" TextColor="#0369A1" CornerRadius="7" />
+                                <Button Grid.Column="2" Text="Hapus" Clicked="OnDeleteClicked"
+                                        VerticalOptions="Center" Padding="10,0" HeightRequest="36"
+                                        BackgroundColor="#FEE2E2" TextColor="#B91C1C" CornerRadius="7" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

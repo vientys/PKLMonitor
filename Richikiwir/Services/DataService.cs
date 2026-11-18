@@ -24,16 +24,14 @@ namespace Richikiwir.Services
             // Dimulai dari kondisi kosong murni tanpa akun atau data tiruan
         }
 
-        public void AddAttendance(AttendanceRecord record)
+        public async Task<(bool Success, string Message)> AddAttendanceAsync(AttendanceRecord record)
         {
+            var result = await ApiService.Current.SubmitAttendanceAsync(record);
+            if (!result.Success) return result;
+
             Attendances.Insert(0, record);
             DataChanged?.Invoke();
-
-            // Simpan ke SQLite Database melalui Web API
-            _ = Task.Run(async () =>
-            {
-                await ApiService.Current.SubmitAttendanceAsync(record);
-            });
+            return result;
         }
 
         public async Task SyncWithApiAsync(string? identifier)

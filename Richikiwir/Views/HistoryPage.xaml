@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:Richikiwir.Models"
+             xmlns:controls="clr-namespace:Richikiwir.Views"
              x:Class="Richikiwir.Views.HistoryPage"
              BackgroundColor="{StaticResource AppBackground}"
              Title="History">
@@ -25,7 +26,7 @@
                         </Border>
                     </Grid>
 
-                    <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
+                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" RowSpacing="10" Margin="0,4,0,0">
                         <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                             <Label Text="Total Hari" FontSize="10" TextColor="#CBD5E1" />
                             <Label x:Name="LblTotalDays" Text="0" FontSize="16" FontAttributes="Bold" TextColor="White" />
@@ -35,10 +36,18 @@
                             <Label x:Name="LblTotalHadir" Text="0" FontSize="16" FontAttributes="Bold" TextColor="#4ADE80" />
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="Center">
-                            <Label Text="Izin/Sakit" FontSize="10" TextColor="#CBD5E1" />
+                            <Label Text="Izin" FontSize="10" TextColor="#CBD5E1" />
                             <Label x:Name="LblTotalIzin" Text="0" FontSize="16" FontAttributes="Bold" TextColor="#FDE047" />
                         </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="3" Spacing="2" HorizontalOptions="Center">
+                        <VerticalStackLayout Grid.Row="1" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="Sakit" FontSize="10" TextColor="#CBD5E1" />
+                            <Label x:Name="LblTotalSakit" Text="0" FontSize="16" FontAttributes="Bold" TextColor="#FCA5A5" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="2" HorizontalOptions="Center">
+                            <Label Text="Alpa" FontSize="10" TextColor="#CBD5E1" />
+                            <Label x:Name="LblTotalAlpa" Text="0" FontSize="16" FontAttributes="Bold" TextColor="#CBD5E1" />
+                        </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="2" Spacing="2" HorizontalOptions="Center">
                             <Label Text="Disiplin" FontSize="10" TextColor="#CBD5E1" />
                             <Label x:Name="LblAttendanceRate" Text="0%" FontSize="16" FontAttributes="Bold" TextColor="#38BDF8" />
                         </VerticalStackLayout>
@@ -49,7 +58,7 @@
             <!-- Search Bar -->
             <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource BorderLight}" StrokeThickness="1" BackgroundColor="White" Padding="12,2">
                 <Grid ColumnDefinitions="24,*">
-                    <Label Text="🔍" FontSize="14" VerticalOptions="Center" TextColor="{StaticResource Gray400}" />
+                    <controls:MaterialIcon Icon="search" IconSize="16" IconColor="{StaticResource Gray400}" />
                     <Entry x:Name="TxtSearch" Grid.Column="1" Placeholder="Cari riwayat tanggal atau lokasi..." 
                            FontSize="12" TextColor="{StaticResource Gray900}" TextChanged="OnSearchTextChanged" />
                 </Grid>
@@ -64,8 +73,12 @@
                             Clicked="OnFilterTabClicked" CommandParameter="Masuk" />
                     <Button x:Name="BtnTabPulang" Text="Pulang (Check-Out)" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
                             Clicked="OnFilterTabClicked" CommandParameter="Pulang" />
-                    <Button x:Name="BtnTabIzin" Text="Izin &amp; Sakit" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                        <Button x:Name="BtnTabIzin" Text="Izin" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
                             Clicked="OnFilterTabClicked" CommandParameter="Izin" />
+                        <Button x:Name="BtnTabSakit" Text="Sakit" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                            Clicked="OnFilterTabClicked" CommandParameter="Sakit" />
+                        <Button x:Name="BtnTabAlpa" Text="Alpa" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
+                            Clicked="OnFilterTabClicked" CommandParameter="Alpa" />
                     <Button x:Name="BtnTabJurnal" Text="Jurnal PKL" FontSize="11" FontAttributes="Bold" HeightRequest="34" CornerRadius="17" Padding="14,0"
                             Clicked="OnFilterTabClicked" CommandParameter="Jurnal" />
                 </HorizontalStackLayout>

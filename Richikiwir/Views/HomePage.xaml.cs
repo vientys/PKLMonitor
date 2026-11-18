@@ -18,8 +18,11 @@ namespace Richikiwir.Views
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            RefreshUserUi(AuthService.Current.CurrentUser);
+            var user = AuthService.Current.CurrentUser;
+            RefreshUserUi(user);
             RefreshDataViews();
+            if (user.Role == UserRole.Siswa && !string.IsNullOrWhiteSpace(user.Identifier))
+                _ = DataService.Current.SyncWithApiAsync(user.Identifier);
         }
 
         private void OnUserChanged(UserModel user)
@@ -82,12 +85,25 @@ namespace Richikiwir.Views
                  string.Equals(a.StudentNisn.Replace(" ", ""), user.Identifier.Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ||
                  string.Equals(a.StudentName, user.FullName, StringComparison.OrdinalIgnoreCase)) &&
                 a.Timestamp.Date == today && a.Type == AttendanceType.Masuk);
+            var todayAbsence = DataService.Current.Attendances.FirstOrDefault(a =>
+                (a.StudentId == user.Id ||
+                 string.Equals(a.StudentNisn.Replace(" ", ""), user.Identifier.Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(a.StudentName, user.FullName, StringComparison.OrdinalIgnoreCase)) &&
+                a.Timestamp.Date == today && a.Type is AttendanceType.Izin or AttendanceType.Sakit or AttendanceType.Alpa);
 
             if (todayIn != null)
             {
                 LblSiswaCheckInTime.Text = todayIn.FormattedTime + " WIB";
-                LblSiswaCheckInSub.Text = "✓ Terverifikasi Geotag";
-                LblSiswaCheckInSub.TextColor = Color.FromArgb("#059669");
+                LblSiswaCheckInSub.Text = todayIn.IsLate
+                    ? $"Terlambat {todayIn.LateMinutes} menit"
+                    : "Terverifikasi Geotag";
+                LblSiswaCheckInSub.TextColor = Color.FromArgb(todayIn.IsLate ? "#D97706" : "#059669");
+            }
+            else if (todayAbsence != null)
+            {
+                LblSiswaCheckInTime.Text = todayAbsence.Type.ToString();
+                LblSiswaCheckInSub.Text = todayAbsence.StatusText;
+                LblSiswaCheckInSub.TextColor = Color.FromArgb(todayAbsence.TypeBadgeColor);
             }
             else
             {
@@ -102,10 +118,16 @@ namespace Richikiwir.Views
                  string.Equals(a.StudentName, user.FullName, StringComparison.OrdinalIgnoreCase)) &&
                 a.Timestamp.Date == today && a.Type == AttendanceType.Pulang);
 
-            if (todayOut != null)
+            if (todayAbsence != null && todayIn == null)
+            {
+                LblSiswaCheckOutTime.Text = "—";
+                LblSiswaCheckOutSub.Text = "Tidak hadir hari ini";
+                LblSiswaCheckOutSub.TextColor = Color.FromArgb(todayAbsence.TypeBadgeColor);
+            }
+            else if (todayOut != null)
             {
                 LblSiswaCheckOutTime.Text = todayOut.FormattedTime + " WIB";
-                LblSiswaCheckOutSub.Text = "✓ Terverifikasi Pulang";
+                LblSiswaCheckOutSub.Text = "Terverifikasi Pulang";
                 LblSiswaCheckOutSub.TextColor = Color.FromArgb("#059669");
             }
             else
